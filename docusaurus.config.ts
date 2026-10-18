@@ -4,9 +4,16 @@ import type * as Preset from '@docusaurus/preset-classic';
 
 // This runs in Node.js - Don't use client-side code here (browser APIs, JSX...)
 
+let URL;
+if (process.env.NODE_ENV === 'production') {
+  URL= '/docs/';
+} else {
+  URL = '/';
+}
+
 const config: Config = {
-  title: 'My Site',
-  tagline: 'Dinosaurs are cool',
+  title: 'OpenInvento',
+  tagline: 'Selfhosted inventory manager',
   favicon: 'img/favicon.ico',
 
   // Future flags, see https://docusaurus.io/docs/api/docusaurus-config#future
@@ -16,14 +23,13 @@ const config: Config = {
 
   // Set the production url of your site here
   url: 'https://your-docusaurus-site.example.com',
-  // Set the /<baseUrl>/ pathname under which your site is served
-  // For GitHub pages deployment, it is often '/<projectName>/'
-  baseUrl: '/',
+
+  // Set the /<baseUrl>/ pathname under which your site is served - For GitHub pages deployment, it is often '/<projectName>/'
+  baseUrl: URL,
 
   // GitHub pages deployment config.
-  // If you aren't using GitHub pages, you don't need these.
-  organizationName: 'facebook', // Usually your GitHub org/user name.
-  projectName: 'docusaurus', // Usually your repo name.
+  organizationName: 'openinvento', // Usually your GitHub org/user name.
+  projectName: 'openinvento', // Usually your repo name.
 
   onBrokenLinks: 'throw',
 
@@ -63,9 +69,9 @@ const config: Config = {
       respectPrefersColorScheme: true,
     },
     navbar: {
-      title: 'My Site',
+      title: 'OpenInvento Docs',
       logo: {
-        alt: 'My Site Logo',
+        alt: 'OpenInvento Docs Logo',
         src: 'img/logo.svg',
       },
       items: [
@@ -78,7 +84,7 @@ const config: Config = {
         // Blog is currently not in use
         // {to: '/blog', label: 'Blog', position: 'left'},
         {
-          href: 'https://github.com/facebook/docusaurus',
+          href: 'https://github.com/openinvento/openinvento',
           label: 'GitHub',
           position: 'right',
         },
@@ -122,12 +128,12 @@ const config: Config = {
             },
             {
               label: 'GitHub',
-              href: 'https://github.com/facebook/docusaurus',
+              href: 'https://github.com/openinvento/openinvento',
             },
           ],
         },
       ],
-      copyright: `Copyright © ${new Date().getFullYear()} My Project, Inc. Built with Docusaurus.`,
+      copyright: `Copyright © ${new Date().getFullYear()} OpenInvento, Inc. Built with Docusaurus.`,
     },
     prism: {
       theme: prismThemes.github,
