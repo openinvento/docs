@@ -14,7 +14,7 @@ if (process.env.NODE_ENV === 'production') {
 const config: Config = {
   title: 'OpenInvento',
   tagline: 'Selfhosted inventory manager',
-  favicon: 'img/favicon.ico',
+  favicon: 'img/favicon.png',
 
   // Future flags, see https://docusaurus.io/docs/api/docusaurus-config#future
   future: {
@@ -72,7 +72,7 @@ const config: Config = {
       title: 'OpenInvento Docs',
       logo: {
         alt: 'OpenInvento Docs Logo',
-        src: 'img/logo.svg',
+        src: 'img/logo.png',
       },
       items: [
         {
