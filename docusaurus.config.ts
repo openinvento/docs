@@ -77,9 +77,9 @@ const config: Config = {
       items: [
         {
           type: 'docSidebar',
-          sidebarId: 'tutorialSidebar',
+          sidebarId: 'documentationDefaultSidebar',
           position: 'left',
-          label: 'Tutorial',
+          label: 'Documentation',
         },
         // Blog is currently not in use
         // {to: '/blog', label: 'Blog', position: 'left'},
@@ -97,7 +97,7 @@ const config: Config = {
           title: 'Docs',
           items: [
             {
-              label: 'Tutorial',
+              label: 'Documentation',
               to: 'docs/intro',
             },
           ],
