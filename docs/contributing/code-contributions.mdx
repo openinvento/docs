@@ -69,7 +69,7 @@ The backend is located in `backend/` and requires Python 3.11+.
 cd backend
 python -m venv .venv
 source .venv/bin/activate  # On Windows: .venv\Scripts\Activate.ps1
-pip install -r requirements.txt
+pip install .
 python manage.py migrate
 python manage.py runserver
 ```
