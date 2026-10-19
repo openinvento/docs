@@ -1,168 +1,100 @@
 ---
-sidebar_position: 3
+sidebar_position: 5
 ---
 
-# Health check
+# Health Check & Updates
 
-Docusaurus supports **[Markdown](https://daringfireball.net/projects/markdown/syntax)** and a few **additional features**.
+OpenInvento provides built-in endpoints for infrastructure health monitoring and automated version checking.
 
-## Front Matter
-
-Markdown documents have metadata at the top called [Front Matter](https://jekyllrb.com/docs/front-matter/):
-
-```text title="my-doc.md"
-// highlight-start
 ---
-id: my-doc-id
-title: My document title
-description: My document description
-slug: /my-custom-url
----
-// highlight-end
 
-Markdown content
+## Health Check Endpoint
+
+OpenInvento exposes a lightweight health check endpoint at:
+
+```http
+GET /api/health
 ```
 
-## Headings {/* #my-heading-id */}
+### Response
 
-Markdown headings are supported using the standard “#” syntax and are automatically added to the table of contents. The number of `#` corresponds to the heading level.
+```json
+HTTP/1.1 200 OK
+Content-Type: application/json
 
-```md
-## Headings
-
-My text
-```
-
-### Heading Ids {/* #my-custom-id */}
-
-Add `{/* #my-custom-id */}` after the heading text to assign it an explicit anchor id, used for linking.
-
-```md
-### Heading Ids {/_ #my-custom-id _/}
-```
-
-## Links
-
-Regular Markdown links are supported, using url paths or relative file paths.
-
-```md
-Let's see how to [Create a page](/create-a-page).
-```
-
-```md
-Let's see how to [Create a page](./create-a-page.mdx).
-```
-
-**Result:** Let's see how to [Create a page](./create-a-page.mdx).
-
-## Images
-
-Regular Markdown images are supported.
-
-You can use absolute paths to reference images in the static directory (`static/img/docusaurus.png`):
-
-```md
-![Docusaurus logo](/img/docusaurus.png)
-```
-
-![Docusaurus logo](/img/docusaurus.png)
-
-You can reference images relative to the current file as well. This is particularly useful to colocate images close to the Markdown files using them:
-
-```md
-![Docusaurus logo](./img/docusaurus.png)
-```
-
-## Code Blocks
-
-Markdown code blocks are supported with Syntax highlighting.
-
-````md
-```jsx title="src/components/HelloDocusaurus.js"
-function HelloDocusaurus() {
-  return <h1>Hello, Docusaurus!</h1>;
-}
-```
-````
-
-```jsx title="src/components/HelloDocusaurus.js"
-function HelloDocusaurus() {
-  return <h1>Hello, Docusaurus!</h1>;
+{
+  "status": "healthy"
 }
 ```
 
-## Admonitions
+This endpoint requires **no authentication** and responds with HTTP `200 OK` as long as the application server is responsive.
 
-Docusaurus has a special syntax to create admonitions and callouts:
+---
 
-```md
-:::tip[My tip]
+### Docker Healthcheck Example
 
-Use this awesome feature option
+You can add a healthcheck definition directly into your `docker-compose.yml`:
 
-:::
-
-:::danger[Take care]
-
-This action is dangerous
-
-:::
+```yaml title="docker-compose.yml"
+services:
+  openinvento:
+    image: ghcr.io/openinvento/openinvento:latest
+    container_name: openinvento
+    restart: unless-stopped
+    ports:
+      - "8080:80"
+    volumes:
+      - openinvento-data:/data
+    env_file:
+      - .env
+    # highlight-start
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost/api/health || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    # highlight-end
 ```
 
-:::tip[My tip]
+---
 
-Use this awesome feature option
+### Kubernetes Probes Example
 
-:::
+If deploying OpenInvento to a Kubernetes cluster, configure liveness and readiness probes:
 
-:::danger[Take care]
+```yaml
+livenessProbe:
+  httpGet:
+    path: /api/health
+    port: 80
+  initialDelaySeconds: 30
+  periodSeconds: 15
 
-This action is dangerous
-
-:::
-
-## MDX and React Components
-
-[MDX](https://mdxjs.com/) can make your documentation more **interactive** and allows using any **React components inside Markdown**:
-
-```jsx
-export const Highlight = ({children, color}) => (
-  <span
-    style={{
-      backgroundColor: color,
-      borderRadius: '20px',
-      color: '#fff',
-      padding: '10px',
-      cursor: 'pointer',
-    }}
-    onClick={() => {
-      alert(`You clicked the color ${color} with label ${children}`)
-    }}>
-    {children}
-  </span>
-);
-
-This is <Highlight color="#25c2a0">Docusaurus green</Highlight> !
-
-This is <Highlight color="#1877F2">Facebook blue</Highlight> !
+readinessProbe:
+  httpGet:
+    path: /api/health
+    port: 80
+  initialDelaySeconds: 10
+  periodSeconds: 10
 ```
 
-export const Highlight = ({children, color}) => (
-  <span
-    style={{
-      backgroundColor: color,
-      borderRadius: '20px',
-      color: '#fff',
-      padding: '10px',
-      cursor: 'pointer',
-    }}
-    onClick={() => {
-      alert(`You clicked the color ${color} with label ${children}`);
-    }}>
-    {children}
-  </span>
-);
+---
 
-This is <Highlight color="#25c2a0">Docusaurus green</Highlight> !
+## Automatic Update Checker
 
-This is <Highlight color="#1877F2">Facebook blue</Highlight> !
+OpenInvento keeps instance administrators informed whenever a new release is published:
+
+- **Periodic Check**: The server contacts the GitHub API once every 24 hours to fetch the latest release tag.
+- **Admin Alerts**: If a newer version is discovered, OpenInvento sends an in-app notification to all instance administrators with release notes and a link to the changelog.
+- **Manual Verification**: Instance administrators can manually check for new releases at any time in **Settings** &rarr; **Instance Settings** or via the `/api/instance-settings/version-check/` endpoint.
+
+### Disabling the Update Checker
+
+If your deployment runs in an air-gapped environment or you do not want outbound network requests to GitHub:
+
+Set `ENABLE_UPDATE_CHECKER=false` in your `.env` file:
+
+```bash title=".env"
+ENABLE_UPDATE_CHECKER=false
+```

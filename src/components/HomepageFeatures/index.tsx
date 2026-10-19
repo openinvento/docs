@@ -11,32 +11,32 @@ type FeatureItem = {
 
 const FeatureList: FeatureItem[] = [
   {
-    title: 'Easy to Use',
+    title: 'Self-Hosted & Independent',
     Svg: require('@site/static/img/undraw_docusaurus_mountain.svg').default,
     description: (
       <>
-        Docusaurus was designed from the ground up to be easily installed and
-        used to get your website up and running quickly.
+        Keep complete ownership of your inventory data. Deploy easily with Docker
+        and run on your home server, VPS, or local network with zero external cloud dependencies.
       </>
     ),
   },
   {
-    title: 'Focus on What Matters',
+    title: 'Intuitive & Flexible Structure',
     Svg: require('@site/static/img/undraw_docusaurus_tree.svg').default,
     description: (
       <>
-        Docusaurus lets you focus on your docs, and we&apos;ll do the chores. Go
-        ahead and move your docs into the <code>docs</code> directory.
+        Organize articles across Areas, Shelves, and nested Chests. Customize categories
+        and dynamic fields for anything from electronics to groceries, tools, or clothing.
       </>
     ),
   },
   {
-    title: 'Powered by React',
+    title: 'Interactive & Scanner-Ready',
     Svg: require('@site/static/img/undraw_docusaurus_react.svg').default,
     description: (
       <>
-        Extend or customize your website layout by reusing React. Docusaurus can
-        be extended while reusing the same header and footer.
+        Effortlessly organize spaces using intuitive drag-and-drop. Generate printable
+        QR/barcode label sheets (PDF) and perform rapid lookups using physical scanners or mobile devices.
       </>
     ),
   },

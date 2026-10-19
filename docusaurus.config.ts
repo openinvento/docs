@@ -50,11 +50,11 @@ const config: Config = {
           // Please change this to your repo.
           // Remove this to remove the "edit this page" links.
           editUrl:
-            'https://github.com/facebook/docusaurus/tree/main/packages/create-docusaurus/templates/shared/',
+            'https://github.com/openinvento/docs/tree/main/',
         },
-        //blog: {
-        // Blog is currently not in use
-        //},
+        blog: {
+          onUntruncatedBlogPosts: 'ignore',
+        },
         theme: {
           customCss: './src/css/custom.css',
         },
@@ -106,16 +106,12 @@ const config: Config = {
           title: 'Community',
           items: [
             {
-              label: 'Stack Overflow',
-              href: 'https://stackoverflow.com/questions/tagged/docusaurus',
+              label: 'GitHub Discussions',
+              href: 'https://github.com/openinvento/openinvento/discussions',
             },
             {
-              label: 'Discord',
-              href: 'https://discordapp.com/invite/docusaurus',
-            },
-            {
-              label: 'X',
-              href: 'https://x.com/docusaurus',
+              label: 'GitHub Issues',
+              href: 'https://github.com/openinvento/openinvento/issues',
             },
           ],
         },
@@ -123,8 +119,8 @@ const config: Config = {
           title: 'More',
           items: [
             {
-              label: 'Blog',
-              to: 'blog',
+              label: 'Landing Page',
+              href: 'https://openinvento.github.io/landingpage/',
             },
             {
               label: 'GitHub',
@@ -133,7 +129,7 @@ const config: Config = {
           ],
         },
       ],
-      copyright: `Copyright © ${new Date().getFullYear()} OpenInvento, Inc. Built with Docusaurus.`,
+      copyright: `Copyright © ${new Date().getFullYear()} OpenInvento. Built with Docusaurus.`,
     },
     prism: {
       theme: prismThemes.github,

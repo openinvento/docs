@@ -21,7 +21,7 @@ function HomepageHeader() {
           <Link
             className="button button--secondary button--lg"
             to="docs/intro">
-            Get started
+            Explore Documentation
           </Link>
         </div>
       </div>
@@ -33,8 +33,8 @@ export default function Home(): ReactNode {
   const {siteConfig} = useDocusaurusContext();
   return (
     <Layout
-      title={`Hello from ${siteConfig.title}`}
-      description="Description will go into a meta tag in <head />">
+      title="Documentation"
+      description="Official documentation for OpenInvento, a self-hosted inventory management system.">
       <HomepageHeader />
       <main>
         <HomepageFeatures />

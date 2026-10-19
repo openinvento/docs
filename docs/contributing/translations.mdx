@@ -2,87 +2,60 @@
 sidebar_position: 2
 ---
 
-# Translate your site
+# Translations & Localization
 
-Let's translate `docs/intro.md` to French.
+OpenInvento is designed to be accessible to users worldwide. Translating OpenInvento into your native language is one of the most impactful ways to contribute to the project!
 
-## Configure i18n
+---
 
-Modify `docusaurus.config.js` to add support for the `fr` locale:
+## Architecture Overview
 
-```js title="docusaurus.config.js"
-export default {
-  i18n: {
-    defaultLocale: 'en',
-    locales: ['en', 'fr'],
-  },
-};
-```
+The OpenInvento frontend uses `react-i18next` for all localization:
+- Translation dictionaries are stored as JSON files inside `frontend/src/locales/` (or equivalent translation directory).
+- All UI strings are mapped to hierarchical keys (for example, `common.save`, `articles.actions.delete`).
 
-## Translate a doc
+---
 
-Copy the `docs/intro.md` file to the `i18n/fr` folder:
+## Recommended Tool: i18n Ally
 
-```bash
-mkdir -p i18n/fr/docusaurus-plugin-content-docs/current/
+For local development in Visual Studio Code, we strongly recommend the **[i18n Ally](https://marketplace.visualstudio.com/items?itemName=Lokalise.i18n-ally)** extension.
 
-cp docs/intro.md i18n/fr/docusaurus-plugin-content-docs/current/intro.md
-```
+With i18n Ally:
+- You see inline translations directly inside JSX/TSX files instead of raw translation keys.
+- Missing translation keys are automatically highlighted in your editor.
+- You can add or edit translations in multiple languages side-by-side with a single click.
 
-Translate `i18n/fr/docusaurus-plugin-content-docs/current/intro.md` in French.
+---
 
-## Start your localized site
+## Translation Guidelines
 
-Start your site on the French locale:
+When adding or updating translations:
 
-```bash
-npm run start -- --locale fr
-```
+1. **Use Nested JSON Keys**: Keep related strings grouped logically:
+   ```json title="locales/en/translation.json"
+   {
+     "inventory": {
+       "title": "Inventory Overview",
+       "empty": "No items found",
+       "actions": {
+         "create": "New Item",
+         "export": "Export CSV"
+       }
+     }
+   }
+   ```
+2. **Never Hardcode Text**: If you find an untranslated string in the UI, replace it with a call to `t('...')` and add the corresponding key in all locale files.
+3. **Keep Tone Clear and Consistent**: Use standard terminology for common actions (*Save*, *Cancel*, *Delete*, *Confirm*).
 
-Your localized site is accessible at [http://localhost:3000/fr/](http://localhost:3000/fr/) and the `Getting Started` page is translated.
+---
 
-:::caution
+## Adding a New Language
 
-In development, you can only use one locale at a time.
+To contribute a new language to OpenInvento:
 
-:::
-
-## Add a Locale Dropdown
-
-To navigate seamlessly across languages, add a locale dropdown.
-
-Modify the `docusaurus.config.js` file:
-
-```js title="docusaurus.config.js"
-export default {
-  themeConfig: {
-    navbar: {
-      items: [
-        // highlight-start
-        {
-          type: 'localeDropdown',
-        },
-        // highlight-end
-      ],
-    },
-  },
-};
-```
-
-The locale dropdown now appears in your navbar:
-
-![Locale Dropdown](./img/localeDropdown.png)
-
-## Build your localized site
-
-Build your site for a specific locale:
-
-```bash
-npm run build -- --locale fr
-```
-
-Or build your site to include all the locales at once:
-
-```bash
-npm run build
-```
+1. Create a new locale folder under `frontend/src/locales/<language-code>/` (e.g. `de`, `fr`, `es`).
+2. Copy the base English strings (`locales/en/`) into your new folder.
+3. Translate the string values into your target language.
+4. Register the new locale in the frontend i18n initialization file (`frontend/src/i18n.ts`).
+5. Verify your translations locally by starting the frontend development server and selecting the new language from your profile settings.
+6. Open a pull request on GitHub and remember to post the required CLA agreement comment!

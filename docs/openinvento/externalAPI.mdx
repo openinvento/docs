@@ -2,22 +2,313 @@
 sidebar_position: 6
 ---
 
-# External API
+# External REST API
 
-You have just learned the **basics of Docusaurus** and made some changes to the **initial template**.
+OpenInvento provides a comprehensive, RESTful API that enables you to automate inventory workflows, integrate custom barcode scanners, sync with ERP/e-commerce systems, or build custom dashboards.
 
-Docusaurus has **much more to offer**!
+---
 
-Have **5 more minutes**? Take a look at **[versioning](../tutorial-extras/manage-docs-versions.mdx)** and **[i18n](../tutorial-extras/translate-your-site.mdx)**.
+## Authentication
 
-Anything **unclear** or **buggy** in this tutorial? [Please report it!](https://github.com/facebook/docusaurus/discussions/4610)
+All external API requests authenticate using an **API Key**.
 
-## What's next?
+### Generating an API Key
 
-- Read the [official documentation](https://docusaurus.io/)
-- Modify your site configuration with [`docusaurus.config.js`](https://docusaurus.io/docs/api/docusaurus-config)
-- Add navbar and footer items with [`themeConfig`](https://docusaurus.io/docs/api/themes/configuration)
-- Add a custom [Design and Layout](https://docusaurus.io/docs/styling-layout)
-- Add a [search bar](https://docusaurus.io/docs/search)
-- Find inspirations in the [Docusaurus showcase](https://docusaurus.io/showcase)
-- Get involved in the [Docusaurus Community](https://docusaurus.io/community/support)
+1. Log in to the OpenInvento web interface.
+2. Navigate to **Settings** &rarr; **API Keys**.
+3. Click **Create API Key**, enter a descriptive label (e.g. `Warehouse Scanner Script`), and confirm.
+4. Copy your secret API key immediately.
+
+:::caution Secret Key Visibility
+The full key is only displayed once upon creation. Store it securely in your secrets manager or `.env` file.
+:::
+
+---
+
+### Request Headers
+
+Include the API key in the `Authorization` header of every HTTP request:
+
+```http
+Authorization: Api-Key <YOUR_API_KEY>
+Content-Type: application/json
+```
+
+Example `curl` request:
+
+```bash
+curl -H "Authorization: Api-Key oiv_live_abc123456789..." \
+     -H "Content-Type: application/json" \
+     http://localhost:8080/api/inventories/
+```
+
+---
+
+## Response Status Codes
+
+| Code | Meaning |
+| :--- | :--- |
+| `200 OK` | The request succeeded and returned the requested data. |
+| `201 Created` | A new entity was successfully created. |
+| `204 No Content` | The deletion or update succeeded with no body returned. |
+| `400 Bad Request` | Missing or invalid request parameters/payload. |
+| `401 Unauthorized` | Invalid, revoked, or missing API key. |
+| `403 Forbidden` | Access denied to the requested inventory or resource. |
+| `404 Not Found` | The requested object does not exist. |
+
+---
+
+## Endpoints
+
+### 1. Inventories
+
+#### List Accessible Inventories
+```http
+GET /api/inventories/
+```
+
+**Response:**
+```json
+[
+  {
+    "uuid": "4f9d2a3e-7a1b-4b2e-8c3d-1e2f3a4b5c6d",
+    "name": "Main Workshop",
+    "identifier": "k8M2pQ9x",
+    "updated_at": "2026-10-18T14:30:00Z"
+  }
+]
+```
+
+#### Export Inventory to CSV
+```http
+GET /api/inventories/{inventory_uuid}/export/
+```
+Returns a `ZIP` file containing structured CSV files for all inventory components.
+
+---
+
+### 2. Areas
+
+#### List Areas
+```http
+GET /api/areas/?inventory={inventory_uuid}
+```
+
+#### Create Area
+```http
+POST /api/areas/
+```
+```json
+{
+  "inventory": "4f9d2a3e-7a1b-4b2e-8c3d-1e2f3a4b5c6d",
+  "name": "Electronics Lab"
+}
+```
+
+#### Update Area
+```http
+PATCH /api/areas/{area_uuid}/
+```
+```json
+{
+  "name": "Advanced Electronics Lab"
+}
+```
+
+#### Delete Area
+```http
+DELETE /api/areas/{area_uuid}/
+```
+
+---
+
+### 3. Shelves
+
+#### List Shelves
+```http
+GET /api/shelves/?inventory={inventory_uuid}
+```
+
+#### Create Shelf
+```http
+POST /api/shelves/
+```
+```json
+{
+  "inventory": "4f9d2a3e-7a1b-4b2e-8c3d-1e2f3a4b5c6d",
+  "area": "7b8a1c2d-3e4f-5a6b-7c8d-9e0f1a2b3c4d",
+  "name": "Component Rack 1"
+}
+```
+
+#### Update / Delete Shelf
+```http
+PATCH /api/shelves/{shelf_uuid}/
+DELETE /api/shelves/{shelf_uuid}/
+```
+
+---
+
+### 4. Chests (Containers & Bins)
+
+#### List Chests
+```http
+GET /api/chests/?inventory={inventory_uuid}
+```
+
+#### Create Chest
+```http
+POST /api/chests/
+```
+```json
+{
+  "inventory": "4f9d2a3e-7a1b-4b2e-8c3d-1e2f3a4b5c6d",
+  "area": "7b8a1c2d-3e4f-5a6b-7c8d-9e0f1a2b3c4d",
+  "shelf": "Optional shelf UUID",
+  "parent_chest": "Optional parent chest UUID for nesting",
+  "name": "Resistors Box"
+}
+```
+
+---
+
+### 5. Articles
+
+#### List Articles
+```http
+GET /api/articles/?inventory={inventory_uuid}
+```
+
+#### Create Article
+```http
+POST /api/articles/
+```
+```json
+{
+  "inventory": "4f9d2a3e-7a1b-4b2e-8c3d-1e2f3a4b5c6d",
+  "name": "Raspberry Pi 5 (8GB)",
+  "description": "Single-board computer with active cooler",
+  "area": "7b8a1c2d-3e4f-5a6b-7c8d-9e0f1a2b3c4d",
+  "shelf": null,
+  "chest": "3c4d5e6f-7a8b-9c0d-1e2f-3a4b5c6d7e8f",
+  "category": "8a7b6c5d-4e3f-2a1b-0c9d-8e7f6a5b4c3d",
+  "quantity": 3,
+  "stock_tracking": true,
+  "custom_fields": {
+    "serial_number": "RP5-8G-2026-X89",
+    "warranty_months": 24
+  }
+}
+```
+
+#### Update Article
+```http
+PATCH /api/articles/{article_uuid}/
+```
+```json
+{
+  "quantity": 2
+}
+```
+
+#### Delete Article
+```http
+DELETE /api/articles/{article_uuid}/
+```
+
+---
+
+### 6. Search
+
+Quickly search for articles across an inventory:
+
+```http
+GET /api/search/?inventory={inventory_uuid}&q=Raspberry
+```
+
+**Response:**
+```json
+[
+  {
+    "uuid": "e1f2a3b4-c5d6-7e8f-9a0b-1c2d3e4f5a6b",
+    "name": "Raspberry Pi 5 (8GB)",
+    "quantity": 2,
+    "identifier": "R8k2M1p0"
+  }
+]
+```
+
+---
+
+### 7. Barcode & QR Code Operations
+
+#### Code Lookup
+Resolve any scanned identifier to its target item:
+
+```http
+POST /api/codes/lookup/
+```
+```json
+{
+  "identifier": "R8k2M1p0"
+}
+```
+
+**Response:**
+```json
+{
+  "uuid": "e1f2a3b4-c5d6-7e8f-9a0b-1c2d3e4f5a6b",
+  "identifier": "R8k2M1p0",
+  "name": "Raspberry Pi 5 (8GB)",
+  "type": "article"
+}
+```
+
+#### PDF Label Sheet Generation
+Generate a printable PDF label sheet for selected items:
+
+```http
+POST /api/codes/pdf/
+```
+```json
+{
+  "uuids": ["e1f2a3b4-c5d6-7e8f-9a0b-1c2d3e4f5a6b"],
+  "code_type": "qr",
+  "size": "a4",
+  "layout": "vertical"
+}
+```
+*Returns `application/pdf` binary data.*
+
+---
+
+### 8. Dashboard Statistics
+
+Retrieve real-time summary statistics for an inventory:
+
+```http
+GET /api/dashboard/?inventory={inventory_uuid}
+```
+
+**Response:**
+```json
+{
+  "counts": {
+    "areas": 4,
+    "articles": 142,
+    "categories": 6
+  },
+  "category_counts": [
+    { "name": "Electronics", "count": 84 },
+    { "name": "Hardware", "count": 58 }
+  ],
+  "last_added": [
+    {
+      "uuid": "e1f2a3b4-c5d6-7e8f-9a0b-1c2d3e4f5a6b",
+      "name": "Raspberry Pi 5 (8GB)",
+      "type": "article",
+      "created_at": "2026-10-18T12:00:00Z"
+    }
+  ]
+}
+```
