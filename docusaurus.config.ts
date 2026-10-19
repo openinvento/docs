@@ -73,6 +73,7 @@ const config: Config = {
       logo: {
         alt: 'OpenInvento Docs Logo',
         src: 'img/logo.png',
+        href: '/docs',
       },
       items: [
         {

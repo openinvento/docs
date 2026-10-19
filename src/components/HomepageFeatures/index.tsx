@@ -1,28 +1,29 @@
 import type {ReactNode} from 'react';
 import clsx from 'clsx';
 import Heading from '@theme/Heading';
+import { Server, Boxes, QrCode } from 'lucide-react';
 import styles from './styles.module.css';
 
 type FeatureItem = {
   title: string;
-  Svg: React.ComponentType<React.ComponentProps<'svg'>>;
+  Svg: React.ComponentType<{ className?: string; role?: string }>;
   description: ReactNode;
 };
 
 const FeatureList: FeatureItem[] = [
   {
     title: 'Self-Hosted & Independent',
-    Svg: require('@site/static/img/undraw_docusaurus_mountain.svg').default,
+    Svg: Server,
     description: (
       <>
         Keep complete ownership of your inventory data. Deploy easily with Docker
-        and run on your home server, VPS, or local network with zero external cloud dependencies.
+        and run on your home server, VPS, or local network.
       </>
     ),
   },
   {
     title: 'Intuitive & Flexible Structure',
-    Svg: require('@site/static/img/undraw_docusaurus_tree.svg').default,
+    Svg: Boxes,
     description: (
       <>
         Organize articles across Areas, Shelves, and nested Chests. Customize categories
@@ -32,7 +33,7 @@ const FeatureList: FeatureItem[] = [
   },
   {
     title: 'Interactive & Scanner-Ready',
-    Svg: require('@site/static/img/undraw_docusaurus_react.svg').default,
+    Svg: QrCode,
     description: (
       <>
         Effortlessly organize spaces using intuitive drag-and-drop. Generate printable
