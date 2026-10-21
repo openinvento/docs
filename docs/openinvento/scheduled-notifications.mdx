@@ -1,0 +1,31 @@
+---
+sidebar_position: 9
+---
+
+# Scheduled Notifications
+
+OpenInvento runs daily background jobs for date-field notifications, low-stock notifications, and update checks. Each job has its own configurable local time. All three jobs default to midnight (`00:00`).
+
+## Configure job times
+
+Set the following environment variables using 24-hour `HH:MM` values:
+
+| Variable | Default | Job |
+| :--- | :---: | :--- |
+| `DATE_FIELD_NOTIFICATION_TIME` | `00:00` | Sends notifications for configured date fields. |
+| `LOW_STOCK_NOTIFICATION_TIME` | `00:00` | Sends low-stock notifications. |
+| `UPDATE_CHECK_TIME` | `00:00` | Checks for OpenInvento updates. |
+
+For example, to schedule notifications in the morning and the update check later:
+
+```dotenv
+DATE_FIELD_NOTIFICATION_TIME=08:00
+LOW_STOCK_NOTIFICATION_TIME=08:30
+UPDATE_CHECK_TIME=09:00
+```
+
+## Control the scheduler
+
+`ENABLE_TASK_SCHEDULER` controls whether the daily task scheduler starts. Set it to `false` to disable all scheduled jobs.
+
+`ENABLE_UPDATE_CHECKER` controls whether the update check is registered. It does not disable the date-field or low-stock notification jobs.
