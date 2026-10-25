@@ -149,23 +149,22 @@ DELETE /api/shelves/{shelf_uuid}/
 
 ---
 
-### 4. Chests (Containers & Bins)
+### 4. Boxes (Containers & Bins)
 
-#### List Chests
+#### List Boxes
 ```http
-GET /api/chests/?inventory={inventory_uuid}
+GET /api/boxes/?inventory={inventory_uuid}
 ```
 
-#### Create Chest
+#### Create Box
 ```http
-POST /api/chests/
+POST /api/boxes/
 ```
 ```json
 {
   "inventory": "4f9d2a3e-7a1b-4b2e-8c3d-1e2f3a4b5c6d",
   "area": "7b8a1c2d-3e4f-5a6b-7c8d-9e0f1a2b3c4d",
   "shelf": "Optional shelf UUID",
-  "parent_chest": "Optional parent chest UUID for nesting",
   "name": "Resistors Box"
 }
 ```
@@ -190,7 +189,7 @@ POST /api/articles/
   "description": "Single-board computer with active cooler",
   "area": "7b8a1c2d-3e4f-5a6b-7c8d-9e0f1a2b3c4d",
   "shelf": null,
-  "chest": "3c4d5e6f-7a8b-9c0d-1e2f-3a4b5c6d7e8f",
+  "box": "3c4d5e6f-7a8b-9c0d-1e2f-3a4b5c6d7e8f",
   "category": "8a7b6c5d-4e3f-2a1b-0c9d-8e7f6a5b4c3d",
   "quantity": 3,
   "stock_tracking": true,

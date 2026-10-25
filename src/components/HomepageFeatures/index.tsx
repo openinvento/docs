@@ -26,7 +26,7 @@ const FeatureList: FeatureItem[] = [
     Svg: Boxes,
     description: (
       <>
-        Organize articles across Areas, Shelves, and nested Chests. Customize categories
+        Organize articles across Areas, Shelves, and nested Boxes. Customize categories
         and dynamic fields for anything from electronics to groceries, tools, or clothing.
       </>
     ),

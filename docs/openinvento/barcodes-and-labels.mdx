@@ -10,7 +10,7 @@ Physical inventory is only as good as your ability to identify and locate items 
 
 ## Unique System Identifiers
 
-Every component in OpenInvento—including **Areas**, **Shelves**, **Chests**, and **Articles**—is automatically assigned a unique alphanumeric **identifier** (e.g. `X7k9P2mQ1a`).
+Every component in OpenInvento—including **Areas**, **Shelves**, **Boxes**, and **Articles**—is automatically assigned a unique alphanumeric **identifier** (e.g. `X7k9P2mQ1a`).
 
 These identifiers are:
 - Compact and optimized for fast barcode rendering and camera scanning.
@@ -23,7 +23,7 @@ These identifiers are:
 
 OpenInvento allows you to export ready-to-print PDF label sheets tailored for standard label paper or sticker sheets:
 
-1. Select one or more items (articles, chests, shelves, or areas) from the inventory view.
+1. Select one or more items (articles, boxes, shelves, or areas) from the inventory view.
 2. Click **Print Labels** in the action toolbar.
 3. Choose your print preferences:
    - **Code Type**:
@@ -40,17 +40,17 @@ OpenInvento allows you to export ready-to-print PDF label sheets tailored for st
 Each printed cell includes:
 1. **Item Title**: Bold item name (up to 32 characters).
 2. **Code**: Centered high-resolution vector QR code or Code128 barcode.
-3. **Reference Footer**: Object type and identifier (e.g., `article: X7k9P2mQ1a` or `chest: K4b1L9vA0e`).
+3. **Reference Footer**: Object type and identifier (e.g., `article: X7k9P2mQ1a` or `box: K4b1L9vA0e`).
 
 ---
 
 ## Scanning & Fast Lookups
 
-When you need to find an item or verify what is stored inside a chest:
+When you need to find an item or verify what is stored inside a box:
 
 1. Click the **Scan Code** icon in the navigation bar.
 2. Scan the code using your mobile device's camera or a connected barcode scanner.
-3. OpenInvento queries the `/api/codes/lookup/` endpoint and immediately opens the detailed view of the matched article, chest, shelf, or area.
+3. OpenInvento queries the `/api/codes/lookup/` endpoint and immediately opens the detailed view of the matched article, box, shelf, or area.
 
 ---
 

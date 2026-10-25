@@ -16,10 +16,10 @@ OpenInvento organizes your items across five main levels:
 Inventory
  └── Areas (e.g., Workshop, Kitchen, Garage)
       ├── Shelves (e.g., Heavy Rack A, Tool Cabinet)
-      │    └── Chests (e.g., Screws Bin, Drill Bit Box)
+      │    └── Boxes (e.g., Screws Bin, Drill Bit Box)
       │         └── Articles (e.g., M4 Screws, SDS Drill Bits)
-      └── Chests (e.g., Storage Bin directly in Area)
-           ├── Sub-Chests (nested boxes inside boxes)
+      └── Boxes (e.g., Storage Bin directly in Area)
+           ├── Sub-Boxes (nested boxes inside boxes)
            └── Articles (e.g., Multimeter, Soldering Iron)
 ```
 
@@ -30,26 +30,26 @@ The top-level container for all your items, locations, and settings.
 
 ### 2. Areas
 Areas represent distinct physical spaces, rooms, or zones (e.g., *Garage*, *Pantry*, *Electronics Lab*, *Office*).
-- Every Shelf and Chest belongs to an Area.
+- Every Shelf and Box belongs to an Area.
 - Articles can be placed directly in an Area if they are standalone (e.g., a lawnmower in the *Garage*).
 
 ### 3. Shelves
 Shelves represent physical shelving units, bookcases, or wall racks inside an Area.
 - Each Shelf belongs to a specific Area.
-- Shelves can hold Articles directly, or contain Chests.
+- Shelves can hold Articles directly, or contain Boxes.
 
-### 4. Chests (Boxes & Bins)
-Chests represent movable containers such as plastic storage tubs, toolbox drawers, bins, or crates.
-- **Flexible Placement**: A Chest can sit directly on the floor of an Area, or be placed onto a specific Shelf.
-- **Nested Sub-Chests**: Chests can contain other Chests! For instance, a large *Tackle Box* can contain several small *Component Trays*.
-- Moving a Chest automatically moves all nested items and sub-chests inside it.
+### 4. Boxes (Boxes & Bins)
+Boxes represent movable containers such as plastic storage tubs, toolbox drawers, bins, or crates.
+- **Flexible Placement**: A Box can sit directly on the floor of an Area, or be placed onto a specific Shelf.
+- **Nested Sub-Boxes**: Boxes can contain other Boxes! For instance, a large *Tackle Box* can contain several small *Component Trays*.
+- Moving a Box automatically moves all nested items and sub-boxes inside it.
 
 ### 5. Articles
 Articles are the physical items you want to keep track of.
 - An Article can be located:
   - Directly in an **Area**
   - On a **Shelf**
-  - Inside a **Chest**
+  - Inside a **Box**
 - **Attributes**:
   - **Name & Description**: Detailed notes up to 750 characters.
   - **Quantity & Stock Tracking**: Toggle stock tracking to monitor quantities and receive low-stock alerts.
