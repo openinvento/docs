@@ -169,6 +169,23 @@ POST /api/boxes/
 }
 ```
 
+#### Update Box
+```http
+PATCH /api/boxes/{box_uuid}/
+```
+Accepts the same fields as box creation, such as `name`, `area`, `shelf`, and `parent_box`.
+
+```json
+{
+  "name": "Resistors and Capacitors Box"
+}
+```
+
+#### Delete Box
+```http
+DELETE /api/boxes/{box_uuid}/
+```
+
 ---
 
 ### 5. Articles
@@ -256,7 +273,118 @@ The article `image` field accepts JPG, JPEG, and PNG images. Article attachments
 
 ---
 
-### 6. Search
+### 6. Article Categories
+
+#### List Article Categories
+```http
+GET /api/article-categories/?inventory={inventory_uuid}
+```
+
+Category responses include `category_fields`, which lists the custom fields assigned to that category (global fields are not included in this category-specific list).
+
+Example response:
+```json
+{
+  "uuid": "8a7b6c5d-4e3f-2a1b-0c9d-8e7f6a5b4c3d",
+  "identifier": "C8k2M1p0",
+  "inventory": "4f9d2a3e-7a1b-4b2e-8c3d-1e2f3a4b5c6d",
+  "created_at": "2026-10-18T12:00:00Z",
+  "updated_at": "2026-10-18T12:00:00Z",
+  "name": "Electronics",
+  "category_fields": [
+    {
+      "uuid": "9d8c7b6a-5e4f-3a2b-1c0d-9e8f7a6b5c4d",
+      "identifier": "F8k2M1p0",
+      "inventory": "4f9d2a3e-7a1b-4b2e-8c3d-1e2f3a4b5c6d",
+      "created_at": "2026-10-18T12:00:00Z",
+      "updated_at": "2026-10-18T12:00:00Z",
+      "key": "serial-number",
+      "label": "Serial Number",
+      "field_type": "text",
+      "category": "8a7b6c5d-4e3f-2a1b-0c9d-8e7f6a5b4c3d",
+      "options": []
+    }
+  ]
+}
+```
+
+#### Create Article Category
+```http
+POST /api/article-categories/
+```
+```json
+{
+  "inventory": "4f9d2a3e-7a1b-4b2e-8c3d-1e2f3a4b5c6d",
+  "name": "Electronics"
+}
+```
+
+#### Update Article Category
+```http
+PATCH /api/article-categories/{category_uuid}/
+```
+
+#### Delete Article Category
+```http
+DELETE /api/article-categories/{category_uuid}/
+```
+
+### 7. Category Fields
+
+Category fields define custom fields that can be used by articles. Use the list endpoint to retrieve field UUIDs for the `field_values` property when creating or updating articles.
+
+#### List Category Fields
+```http
+GET /api/category-fields/?inventory={inventory_uuid}
+```
+
+#### Create Category Field
+```http
+POST /api/category-fields/
+```
+```json
+{
+  "inventory": "4f9d2a3e-7a1b-4b2e-8c3d-1e2f3a4b5c6d",
+  "label": "Serial Number",
+  "field_type": "text",
+  "category": "8a7b6c5d-4e3f-2a1b-0c9d-8e7f6a5b4c3d",
+  "options": []
+}
+```
+
+#### Update Category Field
+```http
+PATCH /api/category-fields/{field_uuid}/
+```
+
+#### Delete Category Field
+```http
+DELETE /api/category-fields/{field_uuid}/
+```
+
+Fields are `inventory`, `label`, `field_type`, `category`, and `options`. The response also includes `uuid`, `identifier`, `created_at`, and `updated_at`. The `key` is generated automatically from the label and is read-only.
+
+Supported `field_type` values are `text`, `number`, `boolean`, `date`, `barcode`, and `select`. Use `options` to provide options for a select field. Set `category` to `null` to define a global field. Global fields are included in each article's `category_fields`; category-specific fields are included when they belong to the article's selected category. The serializer checks that the selected category belongs to the same inventory.
+
+Example response:
+```json
+{
+  "uuid": "9d8c7b6a-5e4f-3a2b-1c0d-9e8f7a6b5c4d",
+  "identifier": "F8k2M1p0",
+  "inventory": "4f9d2a3e-7a1b-4b2e-8c3d-1e2f3a4b5c6d",
+  "created_at": "2026-10-18T12:00:00Z",
+  "updated_at": "2026-10-18T12:00:00Z",
+  "key": "serial-number",
+  "label": "Serial Number",
+  "field_type": "text",
+  "category": "8a7b6c5d-4e3f-2a1b-0c9d-8e7f6a5b4c3d",
+  "options": []
+}
+```
+
+---
+
+### 8. Search
 
 Quickly search for articles across an inventory:
 
@@ -278,7 +406,7 @@ GET /api/search/?inventory={inventory_uuid}&q=Raspberry
 
 ---
 
-### 7. Barcode & QR Code Operations
+### 9. Barcode & QR Code Operations
 
 #### Code Lookup
 Resolve any scanned identifier to its target item:
@@ -320,7 +448,7 @@ POST /api/codes/pdf/
 
 ---
 
-### 8. Dashboard Statistics
+### 10. Dashboard Statistics
 
 Retrieve real-time summary statistics for an inventory:
 
