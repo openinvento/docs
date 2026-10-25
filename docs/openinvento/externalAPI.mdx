@@ -190,13 +190,22 @@ POST /api/articles/
   "area": "7b8a1c2d-3e4f-5a6b-7c8d-9e0f1a2b3c4d",
   "shelf": null,
   "box": "3c4d5e6f-7a8b-9c0d-1e2f-3a4b5c6d7e8f",
-  "category": "8a7b6c5d-4e3f-2a1b-0c9d-8e7f6a5b4c3d",
   "quantity": 3,
   "stock_tracking": true,
-  "custom_fields": {
-    "serial_number": "RP5-8G-2026-X89",
-    "warranty_months": 24
-  }
+  "icon": null,
+  "category": "8a7b6c5d-4e3f-2a1b-0c9d-8e7f6a5b4c3d",
+  "field_values": [
+    {
+      "field": "9d8c7b6a-5e4f-3a2b-1c0d-9e8f7a6b5c4d",
+      "value": "RP5-8G-2026-X89",
+      "notify_on_date": false
+    },
+    {
+      "field": "1a2b3c4d-5e6f-7a8b-9c0d-1e2f3a4b5c6d",
+      "value": 24,
+      "notify_on_date": false
+    }
+  ]
 }
 ```
 
@@ -214,6 +223,36 @@ PATCH /api/articles/{article_uuid}/
 ```http
 DELETE /api/articles/{article_uuid}/
 ```
+
+#### Article Field Values
+
+Article responses include `field_values` and `category_fields`.
+
+`field_values` is returned as a list of objects:
+
+```json
+[
+  {
+    "field": "9d8c7b6a-5e4f-3a2b-1c0d-9e8f7a6b5c4d",
+    "key": "serial-number",
+    "value": "RP5-8G-2026-X89",
+    "notify_on_date": false
+  }
+]
+```
+
+- `field`: UUID of the `CategoryField`.
+- `key`: field's generated technical key.
+- `value`: stored JSON value.
+- `notify_on_date`: whether a date notification is enabled for this value.
+
+The `category_fields` response contains the field definitions applicable to the article: global fields (`category: null`) and, when the article has a category, fields assigned to that category. Supported `field_type` values are `text`, `number`, `boolean`, `date`, `barcode`, and `select`. `options` is a JSON list used for field options.
+
+When submitting `field_values`, each item must include a string `field` UUID. Field IDs must belong to the same inventory and may not be duplicated in the submitted list. `notify_on_date` must be a boolean; only date fields may set it to `true`. The serializer updates submitted values but does not delete existing values omitted from the list.
+
+#### Article Images and Attachments
+
+The article `image` field accepts JPG, JPEG, and PNG images. Article attachments support JPG, JPEG, PNG, PDF, DOC, DOCX, ODT, TXT, RTF, XLS, XLSX, CSV, PPT, PPTX, and ZIP files. The maximum file size is configured by `MAX_FILE_SIZE`.
 
 ---
 
