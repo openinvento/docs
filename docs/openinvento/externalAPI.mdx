@@ -83,162 +83,53 @@ GET /api/inventories/
 ```http
 GET /api/inventories/{inventory_uuid}/export/
 ```
-Returns a `ZIP` file containing structured CSV files for all inventory components.
+Returns a `ZIP` file containing CSV data for inventory entries. Separate area, shelf, box, and article exports are no longer provided.
 
 ---
 
-### 2. Areas
+### 2. Inventory Entries
 
-#### List Areas
+Areas, shelves, boxes, and articles are represented by inventory entries. Each entry has a `type` (`area`, `shelf`, `box`, or `article`) and an optional `parent`. Use the entry type to determine which fields apply.
+
+#### List Entries
 ```http
-GET /api/areas/?inventory={inventory_uuid}
+GET /api/entries/?inventory={inventory_uuid}
 ```
+You can filter by type or parent, for example `?inventory={inventory_uuid}&type=article` or `?inventory={inventory_uuid}&parent={entry_uuid}`.
 
-#### Create Area
+#### Create Entry
 ```http
-POST /api/areas/
+POST /api/entries/
 ```
 ```json
 {
   "inventory": "4f9d2a3e-7a1b-4b2e-8c3d-1e2f3a4b5c6d",
-  "name": "Electronics Lab"
-}
-```
-
-#### Update Area
-```http
-PATCH /api/areas/{area_uuid}/
-```
-```json
-{
-  "name": "Advanced Electronics Lab"
-}
-```
-
-#### Delete Area
-```http
-DELETE /api/areas/{area_uuid}/
-```
-
----
-
-### 3. Shelves
-
-#### List Shelves
-```http
-GET /api/shelves/?inventory={inventory_uuid}
-```
-
-#### Create Shelf
-```http
-POST /api/shelves/
-```
-```json
-{
-  "inventory": "4f9d2a3e-7a1b-4b2e-8c3d-1e2f3a4b5c6d",
-  "area": "7b8a1c2d-3e4f-5a6b-7c8d-9e0f1a2b3c4d",
-  "name": "Component Rack 1"
-}
-```
-
-#### Update / Delete Shelf
-```http
-PATCH /api/shelves/{shelf_uuid}/
-DELETE /api/shelves/{shelf_uuid}/
-```
-
----
-
-### 4. Boxes (Containers & Bins)
-
-#### List Boxes
-```http
-GET /api/boxes/?inventory={inventory_uuid}
-```
-
-#### Create Box
-```http
-POST /api/boxes/
-```
-```json
-{
-  "inventory": "4f9d2a3e-7a1b-4b2e-8c3d-1e2f3a4b5c6d",
-  "area": "7b8a1c2d-3e4f-5a6b-7c8d-9e0f1a2b3c4d",
-  "shelf": "Optional shelf UUID",
-  "name": "Resistors Box"
-}
-```
-
-#### Update Box
-```http
-PATCH /api/boxes/{box_uuid}/
-```
-Accepts the same fields as box creation, such as `name`, `area`, `shelf`, and `parent_box`.
-
-```json
-{
-  "name": "Resistors and Capacitors Box"
-}
-```
-
-#### Delete Box
-```http
-DELETE /api/boxes/{box_uuid}/
-```
-
----
-
-### 5. Articles
-
-#### List Articles
-```http
-GET /api/articles/?inventory={inventory_uuid}
-```
-
-#### Create Article
-```http
-POST /api/articles/
-```
-```json
-{
-  "inventory": "4f9d2a3e-7a1b-4b2e-8c3d-1e2f3a4b5c6d",
+  "type": "article",
+  "parent": "3c4d5e6f-7a8b-9c0d-1e2f-3a4b5c6d7e8f",
   "name": "Raspberry Pi 5 (8GB)",
   "description": "Single-board computer with active cooler",
-  "area": "7b8a1c2d-3e4f-5a6b-7c8d-9e0f1a2b3c4d",
-  "shelf": null,
-  "box": "3c4d5e6f-7a8b-9c0d-1e2f-3a4b5c6d7e8f",
   "quantity": 3,
   "stock_tracking": true,
-  "icon": null,
   "category": "8a7b6c5d-4e3f-2a1b-0c9d-8e7f6a5b4c3d",
-  "field_values": [
-    {
-      "field": "9d8c7b6a-5e4f-3a2b-1c0d-9e8f7a6b5c4d",
-      "value": "RP5-8G-2026-X89",
-      "notify_on_date": false
-    },
-    {
-      "field": "1a2b3c4d-5e6f-7a8b-9c0d-1e2f3a4b5c6d",
-      "value": 24,
-      "notify_on_date": false
-    }
-  ]
+  "field_values": []
 }
 ```
+For a root area, use `"type": "area"` and omit `parent`. Allowed parent and child types are validated by the API.
 
-#### Update Article
+#### Update Entry
 ```http
-PATCH /api/articles/{article_uuid}/
+PATCH /api/entries/{entry_uuid}/
 ```
 ```json
 {
-  "quantity": 2
+  "parent": "7b8a1c2d-3e4f-5a6b-7c8d-9e0f1a2b3c4d"
 }
 ```
+Moving a shelf or box changes that entry's location; its contents remain attached through their parent relationships.
 
-#### Delete Article
+#### Delete Entry
 ```http
-DELETE /api/articles/{article_uuid}/
+DELETE /api/entries/{entry_uuid}/
 ```
 
 #### Article Field Values
@@ -273,7 +164,7 @@ The article `image` field accepts JPG, JPEG, and PNG images. Article attachments
 
 ---
 
-### 6. Article Categories
+### 3. Article Categories
 
 #### List Article Categories
 ```http
@@ -329,7 +220,7 @@ PATCH /api/article-categories/{category_uuid}/
 DELETE /api/article-categories/{category_uuid}/
 ```
 
-### 7. Category Fields
+### 4. Category Fields
 
 Category fields define custom fields that can be used by articles. Use the list endpoint to retrieve field UUIDs for the `field_values` property when creating or updating articles.
 
@@ -384,9 +275,9 @@ Example response:
 
 ---
 
-### 8. Search
+### 5. Search
 
-Quickly search for articles across an inventory:
+Quickly search inventory entries across an inventory:
 
 ```http
 GET /api/search/?inventory={inventory_uuid}&q=Raspberry
@@ -406,7 +297,7 @@ GET /api/search/?inventory={inventory_uuid}&q=Raspberry
 
 ---
 
-### 9. Barcode & QR Code Operations
+### 6. Barcode & QR Code Operations
 
 #### Code Lookup
 Resolve any scanned identifier to its target item:
@@ -448,7 +339,7 @@ POST /api/codes/pdf/
 
 ---
 
-### 10. Dashboard Statistics
+### 7. Dashboard Statistics
 
 Retrieve real-time summary statistics for an inventory:
 
