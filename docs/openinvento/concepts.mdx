@@ -10,7 +10,7 @@ To model your physical spaces effectively, OpenInvento uses a hierarchical data 
 
 ## The Hierarchy
 
-OpenInvento organizes your items across five main levels:
+OpenInvento stores locations and items as inventory entries. Each entry has a type (area, shelf, box, or article) and can have a parent entry. The hierarchy commonly looks like this:
 
 ```
 Inventory
@@ -28,9 +28,13 @@ The top-level container for all your items, locations, and settings.
 - Every new account gets a personal inventory which can be shared with others.
 - A user can be a member of multiple inventories and switch between them in the sidebar.
 
+### Inventory entries
+
+Areas, shelves, boxes, and articles share the same underlying inventory-entry model. The entry type determines which fields and relationships apply. Entries belong to one inventory, and their parent links define where they appear in the hierarchy.
+
 ### 2. Areas
 Areas represent distinct physical spaces, rooms, or zones (e.g., *Garage*, *Pantry*, *Electronics Lab*, *Office*).
-- Every Shelf and Box belongs to an Area.
+- Every Shelf and Box is placed under an Area, directly or through a permitted parent relationship.
 - Articles can be placed directly in an Area if they are standalone (e.g., a lawnmower in the *Garage*).
 
 ### 3. Shelves
@@ -42,7 +46,7 @@ Shelves represent physical shelving units, bookcases, or wall racks inside an Ar
 Boxes represent movable containers such as plastic storage tubs, toolbox drawers, bins, or crates.
 - **Flexible Placement**: A Box can sit directly on the floor of an Area, or be placed onto a specific Shelf.
 - **Nested Sub-Boxes**: Boxes can contain other Boxes! For instance, a large *Tackle Box* can contain several small *Component Trays*.
-- Moving a Box automatically moves all nested items and sub-boxes inside it.
+- Moving a Box changes the box's parent. Its nested entries remain attached to it and move with the hierarchy.
 
 ### 5. Articles
 Articles are the physical items you want to keep track of.
