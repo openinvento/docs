@@ -84,19 +84,21 @@ On every single sign-on login with `OIDC_GROUP_SYNC=true`, OpenInvento:
 2. adds the user to the managed inventories of their groups,
 3. removes the user from managed inventories of groups they are no longer in.
 
-A managed inventory whose last member was removed is **kept with all its contents**. The next group member who logs in sees it again.
+A managed inventory whose last member was removed is **kept with all its contents**. The next group member who logs in sees it again. An instance administrator can delete it even without being a member, see [Releasing and Deleting Managed Inventories](#releasing-and-deleting-managed-inventories).
 
 In a managed inventory:
 
-- **Members cannot be added or removed in OpenInvento**, and members cannot leave it. The **Shared with** section in the inventory settings shows "Members of this inventory are managed by single sign-on" instead of the invite and remove buttons. To change who has access, change the group membership at the provider. The change takes effect at the user's next login.
-- **Only instance administrators can delete it.** Members have no roles in OpenInvento, so otherwise any group member could delete the inventory and all its contents for the whole group.
+- **Single sign-on members cannot be added or removed in OpenInvento**, and they cannot leave it. The **Shared with** section in the inventory settings shows "Members of this inventory are managed by single sign-on" and no invite button. To change who has access, change the group membership at the provider. The change takes effect at the user's next login.
+- **Members without single sign-on can still be removed**, for example local accounts that were members before the group was mapped. Only they have a remove button under **Shared with**. Removing the last member does not delete a managed inventory.
+- **Only instance administrators can delete it.** Members have no roles in OpenInvento, so otherwise any group member could delete the inventory and all its contents for the whole group. Instance administrators can also delete a managed inventory they are not a member of, for example one left without members (`DELETE /api/inventories/<inventory ID>/`).
 - **The name can be changed** by every member. The binding is the group, not the name.
 
 ### Mapping Groups to Existing Inventories
 
 To bind an existing inventory, for example one you have used before setting up single sign-on, log in as an instance administrator, select the inventory and open its settings. Instance administrators see the **Inventory ID** there, with a copy button. Add the group and the ID to `OIDC_GROUP_INVENTORIES` and recreate the container (`docker compose up -d`).
 
-- An inventory can be mapped to one group only; further entries for the same inventory are ignored with a warning at startup. Entries with an invalid ID are ignored as well. If the JSON cannot be parsed, the whole variable is ignored.
+- OpenInvento does not start if `OIDC_GROUP_INVENTORIES` is invalid: JSON that cannot be parsed, no JSON object, an entry without a valid inventory ID, or an inventory mapped to more than one group. The log names the problem. Ignoring such an entry would silently release the inventory it protects.
+- An ID that is valid but belongs to no inventory (for example a copy-and-paste error) binds nothing, and the log shows `OIDC_GROUP_INVENTORIES maps group … to unknown inventory …` at every login of a group member. An inventory that is still bound to the group keeps its members until the mapping is fixed.
 - The mapping takes effect at the next login of a group member. The existing members of the inventory stay members until the sync removes them: the next login of a member who is not in the group removes them.
 - A mapping wins over the prefix. If a group already has an inventory through the prefix and you map the group to another inventory, the mapped inventory takes over the binding at the next login. The previous inventory becomes a normal inventory and keeps its members and contents.
 
@@ -140,7 +142,7 @@ The administrator group moves control over the whole instance to your provider: 
 ## Limitations
 
 - **Changes take effect at login.** Group memberships, administrator access and the allowed groups are applied when the user logs in via single sign-on. Existing sessions and API keys keep their access until then. To revoke access immediately, delete the user in **Instance Settings** &rarr; **Users**: this ends their sessions at their next request and deletes their API keys. Revoking only their API keys leaves an open browser session working. Real-time deprovisioning would require SCIM, which is out of scope.
-- **Only single sign-on accounts are synced.** Local accounts keep the memberships they have, also in managed inventories. Releasing the inventory does not remove them; it only makes the member list editable again. To revoke their access, [release the inventory](#releasing-and-deleting-managed-inventories) and remove them under **Shared with** in the inventory settings.
+- **Only single sign-on accounts are synced.** Local accounts keep the memberships they have, also in managed inventories. To revoke their access, remove them under **Shared with** in the inventory settings.
 - **Exact names.** There are no wildcards or regular expressions, except the prefix.
 
 ---
@@ -157,8 +159,8 @@ The group sync was tested end to end in a real browser against Pocket ID 2.18.0,
 | :--- | :--- |
 | `OIDC login of user … has no usable 'groups' claim` | The provider sends no groups, or under another name. See [Sending the Groups Claim](#sending-the-groups-claim) and `OIDC_GROUPS_CLAIM`. |
 | `OIDC login rejected: subject … is in none of OIDC_ALLOWED_GROUPS` | The user is not in an allowed group, or the names differ (case, Keycloak group paths, Entra ID object IDs). |
-| `OIDC_GROUP_INVENTORIES maps group … to unknown inventory …` | The inventory ID does not exist (deleted, or copied from another instance). |
-| `OIDC_GROUP_INVENTORIES is not valid JSON and is ignored` | Check the quoting; in Docker Compose, wrap the value in single quotes. |
+| `OIDC_GROUP_INVENTORIES maps group … to unknown inventory …` | The inventory ID does not exist (deleted, mistyped, or copied from another instance). Members of an inventory still bound to the group keep their access until the mapping is fixed. |
+| OpenInvento does not start, the log shows `ImproperlyConfigured: OIDC_GROUP_INVENTORIES …` | The mapping is invalid. `is not valid JSON`: check the quoting; in Docker Compose, wrap the value in single quotes. The other messages name the entry: an ID that is not an inventory ID, or an inventory mapped to more than one group. |
 | A group's inventory is not created | The group does not start with `OIDC_INVENTORY_GROUP_PREFIX` exactly (case-sensitive), consists of the prefix only, or is longer than 255 characters. |
-| Members cannot be invited or removed | The inventory is managed by single sign-on. Change the group at the provider, or release the inventory. |
+| Members cannot be invited or removed | The inventory is managed by single sign-on. Change the group at the provider, or release the inventory. Members without single sign-on can still be removed. |
 | A user still sees an inventory after leaving the group | Changes take effect at their next single sign-on login. |
