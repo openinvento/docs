@@ -10,7 +10,7 @@ OpenInvento provides a comprehensive, RESTful API that enables you to automate i
 
 ## Authentication
 
-External API requests authenticate using an **API Key**. API keys work for the endpoints on this page except the inventory CSV export and the PDF label sheet, which currently need a logged-in browser session.
+External API requests authenticate using an **API Key**. API keys work for all endpoints on this page. In v1.4.1 and earlier, the inventory CSV export and the PDF label sheet need a logged-in browser session instead; they accept API keys from v1.5.0.
 
 ### Generating an API Key
 
@@ -27,7 +27,7 @@ The full key is only displayed once upon creation. Store it securely in your sec
 
 ### Request Headers
 
-For the endpoints that accept API keys (all on this page except the CSV export and the PDF label sheet), include the key in the `Authorization` header of the request:
+Include the API key in the `Authorization` header of every HTTP request:
 
 ```http
 Authorization: Api-Key <YOUR_API_KEY>
@@ -86,7 +86,7 @@ GET /api/inventories/{inventory_uuid}/export/
 Returns a `ZIP` file containing CSV data for inventory entries. Separate area, shelf, box, and article exports are no longer provided.
 
 :::note
-This endpoint does not accept API keys yet; it needs a logged-in session.
+This endpoint accepts API keys from v1.5.0. In v1.4.1 and earlier, it needs a logged-in session.
 :::
 
 ---
@@ -341,7 +341,7 @@ POST /api/codes/pdf/
   "layout": "vertical"
 }
 ```
-*Returns `application/pdf` binary data.* This endpoint does not accept API keys yet; it needs a logged-in session.
+*Returns `application/pdf` binary data.* This endpoint accepts API keys from v1.5.0. In v1.4.1 and earlier, it needs a logged-in session.
 
 ---
 
