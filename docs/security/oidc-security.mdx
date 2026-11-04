@@ -5,6 +5,10 @@ title: Single Sign-On Security Notes
 
 # Single Sign-On Security Notes
 
+:::info
+Single sign-on (OpenID Connect) is available from OpenInvento v1.5.0. It is not part of v1.4.1 and earlier.
+:::
+
 OpenInvento acts as an OpenID Connect relying party (RP): it sends the user to an identity provider (OP), receives an authorization code and turns it into a local session. This page lists every relying-party requirement we checked, how the code handles it and how that was verified.
 
 The login is built on [mozilla-django-oidc](https://github.com/mozilla/mozilla-django-oidc) 5.0.2 with PyJWT. Our extensions live in `backend/account_auth/oidc.py` (`OIDCBackend`, `OIDCLoginView`, `OIDCCallbackView` and helper functions). The requirements come from:

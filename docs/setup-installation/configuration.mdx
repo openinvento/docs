@@ -25,13 +25,13 @@ Below is the complete reference table of all environment variables supported by 
 | `ENABLE_UPDATE_CHECKER` | No | `true` | When set to `true`, OpenInvento queries the GitHub API once every 24 hours to check for new releases and alerts administrators. |
 | `ALLOW_INVENTORY_USER_INVITES` | No | `true` | When set to `true`, users can invite other registered users to access their inventories. |
 | `ENABLE_TASK_SCHEDULER` | No | `true` | When set to `true`, enables the task scheduler for background jobs. Strongly recommended for receiving in-app notifications and managing scheduled tasks. |
-| `OIDC_ENABLED` | No | `false` | When set to `true`, enables login via OpenID Connect (single sign-on). See [Single Sign-On](./single-sign-on) for all `OIDC_*` options. |
-| `OIDC_ISSUER` | If OIDC enabled | `None` | Issuer URL of the OpenID Connect provider. |
-| `OIDC_CLIENT_ID` | If OIDC enabled | `None` | Client ID registered at the provider. |
-| `OIDC_CLIENT_SECRET` | No | empty | Client secret; leave empty for public clients (PKCE only). |
-| `OIDC_CA_BUNDLE` | No | empty | CA certificate (PEM) for a provider with a private or self-signed certificate. See [Single Sign-On](./single-sign-on#providers-with-a-private-or-self-signed-certificate). |
-| `DISABLE_LOCAL_LOGIN` | No | `false` | When set to `true`, disables password login and public signup for all accounts except `LOCAL_LOGIN_USERS`. |
-| `LOCAL_LOGIN_USERS` | No | `INIT_ADMIN_USERNAME` | Comma-separated break-glass usernames that keep password login when `DISABLE_LOCAL_LOGIN` is enabled. |
+| `OIDC_ENABLED` | No | `false` | When set to `true`, enables login via OpenID Connect (single sign-on). See [Single Sign-On](./single-sign-on) for all `OIDC_*` options. Available from v1.5.0. |
+| `OIDC_ISSUER` | If OIDC enabled | `None` | Issuer URL of the OpenID Connect provider. Available from v1.5.0. |
+| `OIDC_CLIENT_ID` | If OIDC enabled | `None` | Client ID registered at the provider. Available from v1.5.0. |
+| `OIDC_CLIENT_SECRET` | No | empty | Client secret; leave empty for public clients (PKCE only). Available from v1.5.0. |
+| `OIDC_CA_BUNDLE` | No | empty | CA certificate (PEM) for a provider with a private or self-signed certificate. See [Single Sign-On](./single-sign-on#providers-with-a-private-or-self-signed-certificate). Available from v1.5.0. |
+| `DISABLE_LOCAL_LOGIN` | No | `false` | When set to `true`, disables password login and public signup for all accounts except `LOCAL_LOGIN_USERS`. Available from v1.5.0. |
+| `LOCAL_LOGIN_USERS` | No | `INIT_ADMIN_USERNAME` | Comma-separated break-glass usernames that keep password login when `DISABLE_LOCAL_LOGIN` is enabled. Available from v1.5.0. |
 ---
 
 ## URL & Host Configuration (`APP_URL` & `APP_URLS`)
@@ -49,7 +49,7 @@ OpenInvento uses `APP_URL` and `APP_URLS` to automatically configure two critica
   APP_URLS=http://192.168.1.100:8080,https://inventory.local
   ```
 - **Origin Only**: Do not include subpaths in `APP_URL`. Supply the site origin only.
-- **Only `APP_URLS`**: If `APP_URL` is empty, the first entry of `APP_URLS` is used as `APP_URL`, for example for the single sign-on redirect URI. Single sign-on started under another entry moves to that host first, so users end up logged in there.
+- **Only `APP_URLS`** (from v1.5.0): If `APP_URL` is empty, the first entry of `APP_URLS` is used as `APP_URL`, for example for the single sign-on redirect URI. Single sign-on started under another entry moves to that host first, so users end up logged in there.
 
 ---
 
