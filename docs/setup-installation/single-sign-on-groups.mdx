@@ -1,0 +1,166 @@
+---
+sidebar_position: 2.6
+---
+
+# Single Sign-On Groups
+
+:::info
+Single sign-on groups are available from OpenInvento v1.5.0. They are not part of v1.4.1 and earlier.
+:::
+
+With [single sign-on](./single-sign-on) set up, OpenInvento can use the groups your provider sends at login to:
+
+- **sync inventory membership:** every member of a provider group gets access to the group's inventory, and loses it when they leave the group,
+- **restrict who may log in** via single sign-on,
+- **grant instance administrator access** to the members of one group.
+
+All of this is **disabled by default**. Each feature is turned on by its own variable, so you can, for example, restrict login to a group without using managed inventories.
+
+---
+
+## Environment Variables
+
+| Variable | Required | Default | Description |
+| :--- | :---: | :---: | :--- |
+| `OIDC_GROUPS_CLAIM` | No | `groups` | Claim that lists the user's groups. Read from the ID token and the UserInfo response (UserInfo wins if both contain it). |
+| `OIDC_GROUP_SYNC` | No | `false` | Syncs inventory membership from the groups claim on every single sign-on login, see [Managed Inventories](#managed-inventories). Needs `OIDC_INVENTORY_GROUP_PREFIX`, `OIDC_GROUP_INVENTORIES` or both. |
+| `OIDC_INVENTORY_GROUP_PREFIX` | No | empty | Every group starting with this prefix gets its own inventory, created at the first login of a group member. Example: with `openinvento-`, the group `openinvento-workshop` gets the inventory `workshop`. |
+| `OIDC_GROUP_INVENTORIES` | No | empty | Maps groups to existing inventories, as a JSON object of group names to inventory IDs: `{"family": "6f1c…"}`. See [Mapping Groups to Existing Inventories](#mapping-groups-to-existing-inventories). |
+| `OIDC_ALLOWED_GROUPS` | No | empty | Comma-separated groups. If set, only members of at least one of them can log in via single sign-on. Works without `OIDC_GROUP_SYNC`. |
+| `OIDC_ADMIN_GROUP` | No | empty | Members of this group become instance administrators at login, other single sign-on users lose administrator access. Works without `OIDC_GROUP_SYNC`. |
+
+Group names are compared exactly, including upper and lower case. The same applies to the prefix.
+
+Example for a household with a shared inventory per group and an administrator group:
+
+```bash
+OIDC_SCOPES=openid profile email groups   # only for providers that need the groups scope, see below
+OIDC_GROUP_SYNC=true
+OIDC_INVENTORY_GROUP_PREFIX=openinvento-
+OIDC_GROUP_INVENTORIES={"family": "6f1c2a4e-1d3b-4c5a-9e7f-0a1b2c3d4e5f"}
+OIDC_ALLOWED_GROUPS=family,openinvento-workshop,openinvento-admins
+OIDC_ADMIN_GROUP=openinvento-admins
+```
+
+With `OIDC_ALLOWED_GROUPS` set, the login is checked first: list the administrator group there as well, otherwise users who are only in the administrator group cannot log in.
+
+In Docker Compose, quote the JSON value so YAML keeps it as a string:
+
+```yaml
+    environment:
+      OIDC_GROUP_INVENTORIES: '{"family": "6f1c2a4e-1d3b-4c5a-9e7f-0a1b2c3d4e5f"}'
+```
+
+---
+
+## Sending the Groups Claim
+
+The `groups` claim is not part of the OpenID Connect standard claims, so every provider handles it a little differently. Check what arrives before you enable the sync, for example in the provider's token preview.
+
+| Provider | What to configure |
+| :--- | :--- |
+| Pocket ID | Create the groups under **Administration** &rarr; **User Groups** and add the users. Pocket ID only sends `groups` for the `groups` scope: set `OIDC_SCOPES=openid profile email groups`. |
+| Keycloak | Add a mapper to the client: **Clients** &rarr; `openinvento` &rarr; **Client scopes** &rarr; `openinvento-dedicated` &rarr; **Configure a new mapper** &rarr; **Group Membership**, **Token Claim Name** `groups`, **Full group path** off, **Add to ID token** and **Add to userinfo** on. With **Full group path** on, the names arrive as paths (`/family`, `/parent/child`), and the variables have to use these paths. |
+| Authentik | Sends the names of the user's groups in `groups` with the default `profile` scope mapping. Nothing to configure. |
+| Dex | Set `OIDC_SCOPES=openid profile email groups`. The groups come from the connector (LDAP, GitHub, an upstream OIDC provider, …). Static passwords (`staticPasswords`) have no groups. |
+| Microsoft Entra ID | Sends group **object IDs**, not names, so use the IDs in the variables. Users with more than 200 groups get an overage indicator instead of the list ("groups overage"); OpenInvento then treats the claim as missing. Limit the claim to the groups assigned to the application to avoid that. |
+
+If the claim has a different name at your provider, set `OIDC_GROUPS_CLAIM`. A single string instead of a list counts as one group.
+
+### Missing vs. Empty Claim
+
+- **Claim missing**, or neither a name nor a list of names (for example an object, or a list that contains numbers): nothing is changed. Memberships and administrator access stay as they are, and the log shows `OIDC login of user … has no usable 'groups' claim`. A missing claim is usually a configuration problem (scope not requested, mapper missing), and treating it as "no groups" would remove everyone from every managed inventory at their next login. With `OIDC_ALLOWED_GROUPS` set, the login is refused instead.
+- **Claim present but empty** (`[]`): the user is in no group. They are removed from all managed inventories and lose administrator access granted by `OIDC_ADMIN_GROUP`, unless they are the [last active administrator](#administrator-group).
+
+---
+
+## Managed Inventories
+
+An inventory bound to a provider group is **managed**: its members come from the provider only. Inventories that users create or share themselves are never touched by the sync, so personal and hand-shared inventories keep working exactly as before.
+
+On every single sign-on login with `OIDC_GROUP_SYNC=true`, OpenInvento:
+
+1. creates the inventory for every group that matches `OIDC_INVENTORY_GROUP_PREFIX` and has none yet, and binds the inventories from `OIDC_GROUP_INVENTORIES`,
+2. adds the user to the managed inventories of their groups,
+3. removes the user from managed inventories of groups they are no longer in.
+
+A managed inventory whose last member was removed is **kept with all its contents**. The next group member who logs in sees it again. An instance administrator can delete it even without being a member, see [Releasing and Deleting Managed Inventories](#releasing-and-deleting-managed-inventories).
+
+In a managed inventory:
+
+- **Single sign-on members cannot be added or removed in OpenInvento**, and they cannot leave it. The **Shared with** section in the inventory settings shows "Members of this inventory are managed by single sign-on" and no invite button. To change who has access, change the group membership at the provider. The change takes effect at the user's next login.
+- **Members without single sign-on can still be removed**, for example local accounts that were members before the group was mapped. Only they have a remove button under **Shared with**. Removing the last member does not delete a managed inventory.
+- **Only instance administrators can delete it.** Members have no roles in OpenInvento, so otherwise any group member could delete the inventory and all its contents for the whole group. Instance administrators can also delete a managed inventory they are not a member of, for example one left without members (`DELETE /api/inventories/<inventory ID>/`).
+- **The name can be changed** by every member. The binding is the group, not the name.
+
+### Mapping Groups to Existing Inventories
+
+To bind an existing inventory, for example one you have used before setting up single sign-on, log in as an instance administrator, select the inventory and open its settings. Instance administrators see the **Inventory ID** there, with a copy button. Add the group and the ID to `OIDC_GROUP_INVENTORIES` and recreate the container (`docker compose up -d`).
+
+- OpenInvento does not start if `OIDC_GROUP_INVENTORIES` is invalid: JSON that cannot be parsed, no JSON object, a group listed twice, an entry without a valid inventory ID, or an inventory mapped to more than one group. The log names the problem. Ignoring such an entry would silently release the inventory it protects.
+- An ID that is valid but belongs to no inventory (for example a copy-and-paste error) binds nothing, and the log shows `OIDC_GROUP_INVENTORIES maps group … to unknown inventory …` at every login of a group member. An inventory that is still bound to the group keeps its members until the mapping is fixed.
+- The mapping takes effect at the next login of a group member. The existing members of the inventory stay members until the sync removes them: the next login of a member who is not in the group removes them.
+- A mapping wins over the prefix. If a group already has an inventory through the prefix and you map the group to another inventory, the mapped inventory takes over the binding at the next login. The previous inventory becomes a normal inventory and keeps its members and contents.
+
+### Releasing and Deleting Managed Inventories
+
+- **Release an inventory:** remove its group from `OIDC_GROUP_INVENTORIES` (or change the prefix so that it no longer matches). The inventory becomes a normal inventory right away: its current members stay, and members can be invited and removed again. Turning off `OIDC_GROUP_SYNC` releases all managed inventories at once. If the group is configured again later, the inventory is managed again.
+- **Delete a prefix inventory for good:** remove or rename the group at the provider first. Otherwise the next login of a group member creates a new, empty inventory for the group. The settings page reminds administrators of this.
+- **Group renamed at the provider:** with the prefix, the new name gets a new inventory. The old inventory keeps its contents and loses its members over their next logins. Release it (for example by mapping the new group name to it in `OIDC_GROUP_INVENTORIES`, which moves the binding) or delete it.
+
+### Personal Inventory
+
+Without group sync, every new account gets a personal inventory. With `OIDC_GROUP_SYNC=true`, a personal inventory is only created when the user ends up in **no inventory at all** after the sync: at the first login of a user without a mapped group, or when a user has lost all their groups. Group members therefore do not get an extra empty inventory next to their group's. Inventories a user already has are kept.
+
+---
+
+## Restricting Login to Groups
+
+With `OIDC_ALLOWED_GROUPS=family,friends`, only members of `family` or `friends` can log in via single sign-on. Everyone else is sent back to the login page with "Single sign-on failed", and no account is created for them. This includes members of `OIDC_ADMIN_GROUP` who are in none of the allowed groups. The log shows `OIDC login rejected: subject … is in none of OIDC_ALLOWED_GROUPS`. A login without a usable groups claim is refused as well.
+
+The check runs at every login. A user who is removed from the group can no longer log in, but existing sessions and API keys keep working (see [Limitations](#limitations)). Password logins, for example of [break-glass accounts](./single-sign-on#disabling-password-login-break-glass-accounts), are not affected.
+
+Many providers can restrict an application to groups themselves (Keycloak with a conditional authentication flow, Authentik with policy bindings, Entra ID with "assignment required"). `OIDC_ALLOWED_GROUPS` is for providers that cannot, or as a second line of defense.
+
+---
+
+## Administrator Group
+
+With `OIDC_ADMIN_GROUP=openinvento-admins`, every single sign-on login sets the user's instance administrator access from the group:
+
+- members of the group become administrators,
+- users who are not in the group lose administrator access, even if an administrator promoted them by hand in **Instance Settings** &rarr; **Users**. With this setting, the provider decides who is an administrator of single sign-on accounts.
+
+Accounts without single sign-on, such as the initial administrator and break-glass accounts, are never changed. As a safeguard, the group never removes administrator access from the **last active administrator** of the instance; the log then shows `OIDC_ADMIN_GROUP: user … keeps admin access as the last active administrator`. Promote another account or add the user to the group again.
+
+:::warning
+The administrator group moves control over the whole instance to your provider: whoever can add users to this group at the provider can make them OpenInvento administrators. Keep a [break-glass account](./single-sign-on#disabling-password-login-break-glass-accounts) with a local password.
+:::
+
+---
+
+## Limitations
+
+- **Changes take effect at login.** Group memberships, administrator access and the allowed groups are applied when the user logs in via single sign-on. Existing sessions and API keys keep their access until then. To revoke access immediately, delete the user in **Instance Settings** &rarr; **Users**: this ends their sessions at their next request and deletes their API keys. Revoking only their API keys leaves an open browser session working. Real-time deprovisioning would require SCIM, which is out of scope.
+- **Only single sign-on accounts are synced.** Local accounts keep the memberships they have, also in managed inventories. To revoke their access, remove them under **Shared with** in the inventory settings.
+- **Exact names.** There are no wildcards or regular expressions, except the prefix.
+
+---
+
+## Tested Providers
+
+The group sync was tested end to end in a real browser against Pocket ID 2.18.0, Keycloak 26.8.1, Dex v2.44.0 (authproxy connector) and Authentik 2026.8.5, with the settings from [Sending the Groups Claim](#sending-the-groups-claim): inventories from the prefix and from the mapping, removal after the user was taken out of a group at the provider, the inventory kept without members, the administrator group, and a refused login outside `OIDC_ALLOWED_GROUPS`.
+
+---
+
+## Troubleshooting
+
+| Log message / symptom | Cause and fix |
+| :--- | :--- |
+| `OIDC login of user … has no usable 'groups' claim` | The provider sends no groups, or under another name. See [Sending the Groups Claim](#sending-the-groups-claim) and `OIDC_GROUPS_CLAIM`. |
+| `OIDC login rejected: subject … is in none of OIDC_ALLOWED_GROUPS` | The user is not in an allowed group, or the names differ (case, Keycloak group paths, Entra ID object IDs). |
+| `OIDC_GROUP_INVENTORIES maps group … to unknown inventory …` | The inventory ID does not exist (deleted, mistyped, or copied from another instance). Members of an inventory still bound to the group keep their access until the mapping is fixed. |
+| OpenInvento does not start, the log shows `ImproperlyConfigured: OIDC_GROUP_INVENTORIES …` | The mapping is invalid. `is not valid JSON`: check the quoting; in Docker Compose, wrap the value in single quotes. The other messages name the entry: a group listed twice, an ID that is not an inventory ID, or an inventory mapped to more than one group. |
+| A group's inventory is not created | The group does not start with `OIDC_INVENTORY_GROUP_PREFIX` exactly (case-sensitive), consists of the prefix only, or is longer than 255 characters. |
+| Members cannot be invited or removed | The inventory is managed by single sign-on. Change the group at the provider, or release the inventory. Members without single sign-on can still be removed. |
+| A user still sees an inventory after leaving the group | Changes take effect at their next single sign-on login. |

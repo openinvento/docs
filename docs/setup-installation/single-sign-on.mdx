@@ -106,6 +106,8 @@ The redirect URI is built from `APP_URL`, so it stays correct behind a reverse p
 | `DISABLE_LOCAL_LOGIN` | No | `false` | Disables password login and public signup for all accounts except `LOCAL_LOGIN_USERS`. |
 | `LOCAL_LOGIN_USERS` | No | `INIT_ADMIN_USERNAME` | Comma-separated usernames that keep password login when `DISABLE_LOCAL_LOGIN` is enabled (break-glass accounts). |
 
+The variables for provider groups (inventory sync, allowed groups, administrator group) are described in [Single Sign-On Groups](./single-sign-on-groups).
+
 ---
 
 ## Provider Examples
@@ -307,14 +309,14 @@ On the first login of a provider account, OpenInvento:
 
 1. Creates a user with the username from `OIDC_USERNAME_CLAIM`. Characters that are not allowed in usernames are replaced by `_`. If the username is already taken by another account, a suffix is added (`alice_2`); the existing account is **never** taken over.
 2. Sets the display name and email address from the provider.
-3. Creates a personal inventory for the user, just like a regular signup.
+3. Creates a personal inventory for the user, just like a regular signup. With [group sync](./single-sign-on-groups#personal-inventory), only if the user ends up in no inventory.
 4. Links the account to the provider identity (issuer + subject).
 
 On every following login, the **display name and email address** are updated from the provider. The username is only set once and can be changed by the user afterwards. If the email address from the provider is already used by another OpenInvento account, it is not copied (the conflict is logged).
 
 The email address is not stored if the provider explicitly marks it as unverified (`email_verified: false`), so nobody can claim someone else's address through a provider account. If the provider does not send `email_verified` at all, the address is stored: some providers, for example Microsoft Entra ID, never send this claim. Linking existing accounts by email (below) always requires `email_verified: true`.
 
-Accounts created by single sign-on have **no local password**. The password fields in **Settings** &rarr; **Personal account** are replaced by a notice, and the API rejects setting a password for these accounts. Accounts are never made instance administrators by the provider; an existing administrator can promote them in **Instance Settings** &rarr; **Users**.
+Accounts created by single sign-on have **no local password**. The password fields in **Settings** &rarr; **Personal account** are replaced by a notice, and the API rejects setting a password for these accounts. An existing administrator can promote them in **Instance Settings** &rarr; **Users**, or the provider grants administrator access through [`OIDC_ADMIN_GROUP`](./single-sign-on-groups#administrator-group).
 
 :::danger 
 Linking existing accounts by email
@@ -387,9 +389,9 @@ In all of these tests the providers used certificates from a private CA, trusted
 
 ## Limitations
 
-- **Access is checked at login only.** Disabling or deleting a user at the provider takes effect at their next login. Existing sessions (Django default: two weeks) and API keys keep working until then. To revoke access immediately, delete the user in **Instance Settings** &rarr; **Users** or revoke their API keys. Real-time deprovisioning would require SCIM, which is out of scope.
+- **Access is checked at login only.** Disabling or deleting a user at the provider takes effect at their next login. Existing sessions (Django default: two weeks) and API keys keep working until then. To revoke access immediately, delete the user in **Instance Settings** &rarr; **Users**: this ends their sessions at their next request and deletes their API keys. Revoking only their API keys leaves an open browser session working. Real-time deprovisioning would require SCIM, which is out of scope.
 - **One provider per instance.**
-- **No group or role mapping yet.** Mapping provider groups to inventory memberships and administrator rights is planned as a follow-up.
+- **Groups** are supported for inventory membership, allowed groups and the administrator group, see [Single Sign-On Groups](./single-sign-on-groups). There are no further roles.
 
 ---
 
