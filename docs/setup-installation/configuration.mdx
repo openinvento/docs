@@ -49,7 +49,7 @@ OpenInvento uses `APP_URL` and `APP_URLS` to automatically configure two critica
   APP_URLS=http://192.168.1.100:8080,https://inventory.local
   ```
 - **Origin Only**: Do not include subpaths in `APP_URL`. Supply the site origin only.
-- **HTTPS only** (from v1.5.0): When `APP_URL` and every entry of `APP_URLS` start with `https://`, the session and CSRF cookies get the `Secure` flag, so browsers never send them over plain http, and OpenInvento trusts the `X-Forwarded-Proto` header of your reverse proxy to detect https requests. If one entry still uses `http://`, for example a LAN address, both stay off, because secure cookies would break logins on that address.
+- **HTTPS only** (from v1.5.0): When `APP_URL` and every entry of `APP_URLS` start with `https://`, the session and CSRF cookies get the `Secure` flag, so browsers never send them over plain http, and OpenInvento trusts the `X-Forwarded-Proto` header of your reverse proxy to detect https requests. If one entry still uses `http://`, for example a LAN address, both stay off, because secure cookies would break logins on that address. Give http access its own host name: browsers do not separate cookies by scheme or port, so with the same host over `http://` and `https://` (for example `https://inventory.example.com` and `http://inventory.example.com:8080`) the session cookie of an https login is also sent over http. OpenInvento logs a warning at startup in that case.
 - **Only `APP_URLS`** (from v1.5.0): If `APP_URL` is empty, the first entry of `APP_URLS` is used as `APP_URL`, for example for the single sign-on redirect URI. Single sign-on started under another entry moves to that host first, so users end up logged in there.
 
 ---
