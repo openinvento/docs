@@ -32,7 +32,7 @@ With i18n Ally:
 When adding or updating translations:
 
 1. **Use Nested JSON Keys**: Keep related strings grouped logically:
-   ```json title="locales/en/translation.json"
+   ```json title="frontend/src/locales/en.json"
    {
      "inventory": {
        "title": "Inventory Overview",
@@ -53,9 +53,10 @@ When adding or updating translations:
 
 To contribute a new language to OpenInvento:
 
-1. Create a new locale folder under `frontend/src/locales/<language-code>/` (e.g. `de`, `fr`, `es`).
-2. Copy the base English strings (`locales/en/`) into your new folder.
-3. Translate the string values into your target language.
-4. Register the new locale in the frontend i18n initialization file (`frontend/src/i18n.ts`).
-5. Verify your translations locally by starting the frontend development server and selecting the new language from your profile settings.
-6. Open a pull request on GitHub and remember to post the required CLA agreement comment!
+1. Copy the English strings `frontend/src/locales/en.json` to `frontend/src/locales/<language-code>.json` (e.g. `it.json`).
+2. Translate the string values into your target language. Keep the keys and the `{{placeholders}}` unchanged.
+3. Import the file and add it to `resources` in the frontend i18n initialization file (`frontend/src/i18n.ts`).
+4. Add the language to the language selector in `frontend/src/components/settings/UserSettings.tsx`: a `SelectItem` with the language code, and its name in `languageName`.
+5. Run `pnpm i18n:check` in `frontend/`. It checks every locale file against `en.json` for missing keys and placeholders.
+6. Verify your translations locally by starting the frontend development server and selecting the new language from your profile settings.
+7. Open a pull request on GitHub and remember to post the required CLA agreement comment!

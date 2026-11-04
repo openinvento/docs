@@ -67,7 +67,9 @@ DATA_DIRECTORY=/data
 # Initial Administrator Credentials (used only on first startup)
 CREATE_INIT_ADMIN=true
 INIT_ADMIN_USERNAME=admin
-INIT_ADMIN_PASSWORD=change-this-password
+# Keep the single quotes: Compose would otherwise replace $... in the password with variables.
+# Choose a password without single quotes.
+INIT_ADMIN_PASSWORD='<set your own password before the first start>'
 
 # Feature Flags
 ENABLE_SIGNUP=false
@@ -119,7 +121,7 @@ docker run -d \
   -e DATA_DIRECTORY=/data \
   -e APP_URL=http://localhost:8080 \
   -e INIT_ADMIN_USERNAME=admin \
-  -e INIT_ADMIN_PASSWORD=change-this-password \
+  -e INIT_ADMIN_PASSWORD='<set your own password before the first start>' \
   -e CREATE_INIT_ADMIN=true \
   -e ENABLE_SIGNUP=false \
   -e ENABLE_UPDATE_CHECKER=true \

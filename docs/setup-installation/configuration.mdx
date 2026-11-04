@@ -62,9 +62,9 @@ To generate a secure key:
 openssl rand -hex 32
 ```
 
-Add the generated string to your `.env`:
+Add the generated string to your `.env`, and never reuse a key from an example:
 ```bash
-SECRET_KEY=b4a92f08c3d9a105f2e8790b435210984a92f08c3d9a105f2e8790b43521098
+SECRET_KEY=<output of openssl rand -hex 32>
 ```
 
 ---

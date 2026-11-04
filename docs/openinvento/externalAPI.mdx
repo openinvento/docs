@@ -10,7 +10,7 @@ OpenInvento provides a comprehensive, RESTful API that enables you to automate i
 
 ## Authentication
 
-All external API requests authenticate using an **API Key**.
+External API requests authenticate using an **API Key**. API keys work for all endpoints on this page. In v1.4.1 and earlier, the inventory CSV export and the PDF label sheet need a logged-in browser session instead; they accept API keys from v1.5.0.
 
 ### Generating an API Key
 
@@ -85,6 +85,10 @@ GET /api/inventories/{inventory_uuid}/export/
 ```
 Returns a `ZIP` file containing CSV data for inventory entries. Separate area, shelf, box, and article exports are no longer provided.
 
+:::note
+This endpoint accepts API keys from v1.5.0. In v1.4.1 and earlier, it needs a logged-in session.
+:::
+
 ---
 
 ### 2. Inventory Entries
@@ -111,7 +115,9 @@ POST /api/entries/
   "quantity": 3,
   "stock_tracking": true,
   "category": "8a7b6c5d-4e3f-2a1b-0c9d-8e7f6a5b4c3d",
-  "field_values": []
+  "field_values_input": [
+    {"field": "9d8c7b6a-5e4f-3a2b-1c0d-9e8f7a6b5c4d", "value": "RP5-8G-2026-X89"}
+  ]
 }
 ```
 For a root area, use `"type": "area"` and omit `parent`. Allowed parent and child types are validated by the API.
@@ -134,7 +140,7 @@ DELETE /api/entries/{entry_uuid}/
 
 #### Article Field Values
 
-Article responses include `field_values` and `category_fields`.
+Article responses include `field_values` and `category_fields`. To set field values when creating or updating an article, send them as `field_values_input`; `field_values` is read-only and ignored in requests.
 
 `field_values` is returned as a list of objects:
 
@@ -156,7 +162,7 @@ Article responses include `field_values` and `category_fields`.
 
 The `category_fields` response contains the field definitions applicable to the article: global fields (`category: null`) and, when the article has a category, fields assigned to that category. Supported `field_type` values are `text`, `number`, `boolean`, `date`, `barcode`, and `select`. `options` is a JSON list used for field options.
 
-When submitting `field_values`, each item must include a string `field` UUID. Field IDs must belong to the same inventory and may not be duplicated in the submitted list. `notify_on_date` must be a boolean; only date fields may set it to `true`. The serializer updates submitted values but does not delete existing values omitted from the list.
+When submitting `field_values_input` (a list of objects with `field`, `value` and optionally `notify_on_date`), each item must include a string `field` UUID. Field IDs must belong to the same inventory and may not be duplicated in the submitted list. `notify_on_date` must be a boolean; only date fields may set it to `true`. The serializer updates submitted values but does not delete existing values omitted from the list.
 
 #### Article Images and Attachments
 
@@ -222,7 +228,7 @@ DELETE /api/article-categories/{category_uuid}/
 
 ### 4. Category Fields
 
-Category fields define custom fields that can be used by articles. Use the list endpoint to retrieve field UUIDs for the `field_values` property when creating or updating articles.
+Category fields define custom fields that can be used by articles. Use the list endpoint to retrieve field UUIDs for the `field_values_input` property when creating or updating articles.
 
 #### List Category Fields
 ```http
@@ -335,7 +341,7 @@ POST /api/codes/pdf/
   "layout": "vertical"
 }
 ```
-*Returns `application/pdf` binary data.*
+*Returns `application/pdf` binary data.* This endpoint accepts API keys from v1.5.0. In v1.4.1 and earlier, it needs a logged-in session.
 
 ---
 

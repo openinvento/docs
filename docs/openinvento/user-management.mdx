@@ -53,8 +53,9 @@ When `ALLOW_INVENTORY_USER_INVITES` is enabled, registered users can view userna
 OpenInvento includes an in-app notification center that keeps you informed of critical events:
 
 ### Low-Stock Alerts
-When an article has **Stock Tracking** enabled and its `quantity` drops to or below its `minimum_quantity` threshold:
-- A low-stock notification is automatically generated for all members of the inventory.
+When an article has **Stock Tracking** enabled, a value in its `minimum_quantity` field (a number field every inventory has by default), and its `quantity` is at or below that value:
+- The daily low-stock job (see [Scheduled Notifications](./scheduled-notifications)) creates a notification for all members of the inventory and for instance administrators. Changing the quantity does not create the notification right away.
+- Articles without a `minimum_quantity` value never get low-stock notifications.
 - Notifications display an alert badge in the navigation bar.
 - Once restocked, the notification can be dismissed or marked as read.
 
