@@ -154,3 +154,7 @@ When exposing OpenInvento publicly with HTTPS:
    - `Host: $host`
    - `X-Forwarded-For: $proxy_add_x_forwarded_for`
    - `X-Forwarded-Proto: https`
+
+   The proxy must set `X-Forwarded-Proto` itself and not pass on a value sent by the client. Caddy and Traefik do this by default; with Nginx, use `proxy_set_header X-Forwarded-Proto $scheme;`.
+
+From v1.5.0, when `APP_URL` and every entry of `APP_URLS` use `https://`, OpenInvento sends the session and CSRF cookies with the `Secure` flag and takes the scheme from `X-Forwarded-Proto` (the Nginx inside the container passes it on). See [URL & Host Configuration](./configuration#url--host-configuration-app_url--app_urls).
