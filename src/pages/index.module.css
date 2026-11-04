@@ -1,23 +1,33 @@
-/**
- * CSS files with the .module.css suffix will be treated as CSS modules
- * and scoped locally.
- */
+.page { --ink: #19212a; --muted: #64707c; --line: #dce2e8; --blue: #2563eb; background: #f8fafc; color: var(--ink); min-height: calc(100vh - 60px); padding: 4.5rem 0 6rem; }
+.hero { border-bottom: 1px solid var(--line); padding: 1rem 0 3.5rem; }
+.overline { color: var(--blue); font-family: var(--ifm-font-family-monospace); font-size: .7rem; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; }
+.headlineRow { align-items: center; display: flex; gap: 2rem; justify-content: space-between; margin-top: 1.25rem; }
+.hero h1 { font-size: clamp(2.7rem, 5vw, 4.4rem); letter-spacing: -.045em; line-height: 1.02; margin: 0; max-width: 700px; }
+.heroCopy p { color: var(--muted); font-size: 1.1rem; line-height: 1.6; margin: 0; max-width: 520px; }
+.docsButton { align-items: center; background: var(--blue); border-radius: 20px; color: #fff; display: inline-flex; flex: 0 0 auto; font-size: 1.05rem; font-weight: 700; gap: .75rem; padding: 1rem 1.35rem; text-decoration: none; transition: background .2s, box-shadow .2s, transform .2s; }
+.docsButton:hover { background: #1d4ed8; box-shadow: 0 10px 24px rgb(37 99 235 / 25%); color: #fff; transform: translateY(-2px); }
+.section { padding-top: 3.5rem; }
+.sectionHeader { align-items: center; display: flex; justify-content: space-between; margin-bottom: 1.15rem; }
+.sectionHeader > div { align-items: center; display: flex; gap: .75rem; }
+.sectionHeader h2 { font-size: 1.35rem; letter-spacing: -.02em; margin: 0; }
+.sectionHeader > a { align-items: center; color: var(--blue); display: flex; font-size: .82rem; font-weight: 700; gap: .35rem; text-decoration: none; }
+.sectionLabel { color: #9aa5b1; font-family: var(--ifm-font-family-monospace); font-size: .68rem; }
+.routeGrid { display: grid; gap: 1rem; grid-template-columns: repeat(3, 1fr); }
+.routeCard, .compactCard { align-items: center; background: #fff; border: 1px solid var(--line); color: var(--ink); display: flex; gap: 1rem; text-decoration: none; transition: border-color .2s, box-shadow .2s, transform .2s; }
+.routeCard { min-height: 145px; padding: 1.25rem; }
+.routeCard:hover, .compactCard:hover { border-color: #9bb9f8; box-shadow: 0 10px 24px rgb(34 51 68 / 8%); color: var(--ink); transform: translateY(-2px); }
+.routeIcon { align-items: center; background: #edf3ff; color: var(--blue); display: flex; flex: 0 0 auto; height: 42px; justify-content: center; width: 42px; }
+.routeText { display: flex; flex: 1; flex-direction: column; gap: .35rem; }
+.routeText strong { font-size: 1rem; }
+.routeText span { color: var(--muted); font-size: .84rem; line-height: 1.45; }
+.routeArrow { color: #9aa5b1; flex: 0 0 auto; }
+.compactGrid { display: grid; gap: .75rem 1rem; grid-template-columns: repeat(2, 1fr); }
+.compactCard { min-height: 82px; padding: .95rem 1.1rem; }
+.compactCard .routeIcon { background: #f1f5f9; color: #5c6b7b; height: 34px; width: 34px; }
+.compactCard .routeText { gap: .15rem; }
+.compactCard .routeText strong { font-size: .9rem; }
+.compactCard .routeText span { font-size: .78rem; }
 
-.heroBanner {
-  padding: 4rem 0;
-  text-align: center;
-  position: relative;
-  overflow: hidden;
-}
+@media screen and (max-width: 996px) { .page { padding-top: 3rem; } .routeGrid { grid-template-columns: 1fr; } }
 
-@media screen and (max-width: 996px) {
-  .heroBanner {
-    padding: 2rem;
-  }
-}
-
-.buttons {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
+@media screen and (max-width: 600px) { .page { padding-bottom: 4rem; } .headlineRow { align-items: flex-start; flex-direction: column; gap: 1rem; } .hero h1 { font-size: 2.8rem; } .sectionHeader { align-items: flex-start; flex-direction: column; gap: .7rem; } .compactGrid { grid-template-columns: 1fr; } }

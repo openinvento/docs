@@ -62,6 +62,20 @@ const config: Config = {
     ],
   ],
 
+  themes: [
+    [
+      '@easyops-cn/docusaurus-search-local',
+      {
+        hashed: true,
+        indexBlog: false,
+        indexDocs: true,
+        indexPages: false,
+        language: ['en'],
+        searchBarShortcutKeymap: 'mod+k',
+      },
+    ],
+  ],
+
   themeConfig: {
     // Replace with your project's social card
     image: 'img/docusaurus-social-card.jpg',
@@ -87,6 +101,10 @@ const config: Config = {
         {
           href: 'https://github.com/openinvento/openinvento',
           label: 'GitHub',
+          position: 'right',
+        },
+        {
+          type: 'search',
           position: 'right',
         },
       ],
