@@ -1,0 +1,152 @@
+---
+sidebar_position: 11
+---
+
+# Prometheus Metrics
+
+:::info
+The Prometheus metrics module is available from OpenInvento v1.5.0. It is not part of v1.4.1 and earlier.
+:::
+
+The optional **Prometheus metrics** module serves inventory and instance numbers in the [Prometheus text format](https://prometheus.io/docs/instrumenting/exposition_formats/), which Prometheus and most other monitoring tools can scrape.
+
+```http
+GET /api/metrics/
+Authorization: Api-Key <your_api_key>
+```
+
+The numbers are counted from the database on every scrape, so all workers return the same values and nothing is lost on a restart.
+
+---
+
+## Enable the module
+
+1. Go to **Settings** &rarr; **Admin settings (instance)** &rarr; **Modules** and switch on **Prometheus metrics**. While the module is off, `/api/metrics/` answers `404`.
+2. Create an API key for the scraper under **Settings** &rarr; **API Keys** (see [Generating an API Key](./externalAPI#generating-an-api-key)).
+
+An API key is always required; a logged-in browser session is not enough, and requests without a valid key get `401`. What the key sees depends on its user:
+
+| Key of | Metrics |
+| :--- | :--- |
+| An instance administrator | Instance metrics and every inventory |
+| Any other user | Only the inventories the user is a member of |
+
+To end access, revoke the key under **Settings** &rarr; **API Keys**.
+
+---
+
+## Metrics
+
+All metrics are gauges. Inventories are identified by their UUID; names are not exported.
+
+| Metric | Labels | Key | Description |
+| :--- | :--- | :--- | :--- |
+| `openinvento_build_info` | `version` | Admin | Always `1`; the `version` label holds the running OpenInvento version. |
+| `openinvento_users` | `state` (`active`, `inactive`) | Admin | Number of user accounts. |
+| `openinvento_inventories` | – | Admin | Number of inventories. |
+| `openinvento_inventory_entries` | `inventory_uuid`, `type` (`area`, `shelf`, `box`, `article`) | Any | Number of entries per type; types without entries are reported as `0`. |
+| `openinvento_inventory_members` | `inventory_uuid` | Any | Number of users with access to the inventory. |
+
+Example response:
+
+```text
+# HELP openinvento_build_info OpenInvento version.
+# TYPE openinvento_build_info gauge
+openinvento_build_info{version="v1.5.0"} 1
+# HELP openinvento_users Number of user accounts.
+# TYPE openinvento_users gauge
+openinvento_users{state="active"} 2
+openinvento_users{state="inactive"} 0
+# HELP openinvento_inventories Number of inventories.
+# TYPE openinvento_inventories gauge
+openinvento_inventories 1
+# HELP openinvento_inventory_entries Number of inventory entries per type.
+# TYPE openinvento_inventory_entries gauge
+openinvento_inventory_entries{inventory_uuid="b372d52c-30ce-4d0a-9f6d-3f90cffe849d",type="area"} 1
+openinvento_inventory_entries{inventory_uuid="b372d52c-30ce-4d0a-9f6d-3f90cffe849d",type="shelf"} 1
+openinvento_inventory_entries{inventory_uuid="b372d52c-30ce-4d0a-9f6d-3f90cffe849d",type="box"} 0
+openinvento_inventory_entries{inventory_uuid="b372d52c-30ce-4d0a-9f6d-3f90cffe849d",type="article"} 1
+# HELP openinvento_inventory_members Number of users with access to the inventory.
+# TYPE openinvento_inventory_members gauge
+openinvento_inventory_members{inventory_uuid="b372d52c-30ce-4d0a-9f6d-3f90cffe849d"} 2
+```
+
+---
+
+## Scraper examples
+
+The examples read the API key from a file or a secret instead of putting it into the configuration. Replace `inventory.example.com` with your instance.
+
+### Prometheus and VictoriaMetrics
+
+Prometheus sends the key with an `authorization` block of type `Api-Key`. VictoriaMetrics (single-node with `-promscrape.config`, or `vmagent`) accepts the same file.
+
+```yaml title="prometheus.yml"
+scrape_configs:
+  - job_name: openinvento
+    scheme: https
+    metrics_path: /api/metrics/
+    authorization:
+      type: Api-Key
+      credentials_file: /etc/prometheus/openinvento.key
+    static_configs:
+      - targets: ["inventory.example.com"]
+```
+
+### Grafana Alloy
+
+```alloy title="config.alloy"
+prometheus.scrape "openinvento" {
+  targets      = [{"__address__" = "inventory.example.com"}]
+  scheme       = "https"
+  metrics_path = "/api/metrics/"
+  authorization {
+    type             = "Api-Key"
+    credentials_file = "/etc/alloy/openinvento.key"
+  }
+  forward_to = [prometheus.remote_write.default.receiver]
+}
+```
+
+Alloy refuses a `scrape_timeout` longer than the `scrape_interval`; with an interval below 10 seconds, set `scrape_timeout` as well.
+
+### Telegraf
+
+```toml title="telegraf.conf"
+[[inputs.prometheus]]
+  urls = ["https://inventory.example.com/api/metrics/"]
+  metric_version = 2
+  http_headers = {"Authorization" = "Api-Key ${OPENINVENTO_API_KEY}"}
+```
+
+### Netdata
+
+```yaml title="go.d/prometheus.conf"
+jobs:
+  - name: openinvento
+    url: https://inventory.example.com/api/metrics/
+    headers:
+      Authorization: Api-Key <your_api_key>
+```
+
+Netdata does not chart metrics whose name ends in `_info`, so `openinvento_build_info` is not shown there; all other metrics are.
+
+### Datadog
+
+Use the OpenMetrics integration. `version` is a reserved tag in Datadog, so rename the label:
+
+```yaml title="conf.d/openmetrics.d/conf.yaml"
+instances:
+  - openmetrics_endpoint: https://inventory.example.com/api/metrics/
+    namespace: openinvento
+    metrics:
+      - openinvento_.*
+    headers:
+      Authorization: Api-Key <your_api_key>
+    rename_labels:
+      version: openinvento_version
+```
+
+### Zabbix
+
+Create an **HTTP agent** item with the URL `https://inventory.example.com/api/metrics/`, the header `Authorization: Api-Key {$OPENINVENTO_API_KEY}` and type of information *Text*. Add dependent items with the preprocessing step **Prometheus pattern**, for example `openinvento_users{state="active"}`, or use **Prometheus to JSON** for low-level discovery of `inventory_uuid`.
