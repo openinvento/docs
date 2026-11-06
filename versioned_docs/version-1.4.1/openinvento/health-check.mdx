@@ -1,0 +1,100 @@
+---
+sidebar_position: 5
+---
+
+# Health Check Endpoint & in-app Update Checker
+
+OpenInvento provides built-in endpoints for infrastructure health monitoring and automated version checking.
+
+---
+
+## Health Check Endpoint
+
+OpenInvento exposes a lightweight health check endpoint at:
+
+```http
+GET /api/health
+```
+
+### Response
+
+```json
+HTTP/1.1 200 OK
+Content-Type: application/json
+
+{
+  "status": "healthy"
+}
+```
+
+This endpoint requires **no authentication** and responds with HTTP `200 OK` as long as the application server is responsive.
+
+---
+
+### Docker Healthcheck Example
+
+You can add a healthcheck definition directly into your `docker-compose.yml`:
+
+```yaml title="docker-compose.yml"
+services:
+  openinvento:
+    image: ghcr.io/openinvento/openinvento:latest
+    container_name: openinvento
+    restart: unless-stopped
+    ports:
+      - "8080:80"
+    volumes:
+      - openinvento-data:/data
+    env_file:
+      - .env
+    # highlight-start
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost/api/health || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    # highlight-end
+```
+
+---
+
+### Kubernetes Probes Example
+
+If deploying OpenInvento to a Kubernetes cluster, configure liveness and readiness probes:
+
+```yaml
+livenessProbe:
+  httpGet:
+    path: /api/health
+    port: 80
+  initialDelaySeconds: 30
+  periodSeconds: 15
+
+readinessProbe:
+  httpGet:
+    path: /api/health
+    port: 80
+  initialDelaySeconds: 10
+  periodSeconds: 10
+```
+
+---
+
+## Automatic Update Checker
+
+OpenInvento keeps instance administrators informed whenever a new release is published:
+
+- **Periodic Check**: The server contacts the GitHub API once every 24 hours to fetch the latest release tag.
+- **Admin Alerts**: If a newer version is discovered, OpenInvento sends an in-app notification to all instance administrators with release notes and a link to the changelog.
+- **Manual Verification**: Instance administrators can manually check for new releases at any time in **Settings** &rarr; **Instance Settings** or via the `/api/instance-settings/version-check/` endpoint.
+
+### Disabling the Update Checker
+
+If your deployment runs in an air-gapped environment or you do not want outbound network requests to GitHub:
+
+Set `ENABLE_UPDATE_CHECKER=false` in your `.env` file:
+
+```bash title=".env"
+ENABLE_UPDATE_CHECKER=false
+```

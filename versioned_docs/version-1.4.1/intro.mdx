@@ -1,0 +1,61 @@
+---
+sidebar_position: 1
+---
+
+# Introduction to OpenInvento
+
+<div style={{textAlign: 'center'}}>
+  <img src="https://raw.githubusercontent.com/openinvento/openinvento/refs/heads/main/assets/banner_light.png" alt="OpenInvento Header" width="100%" />
+</div>
+
+**OpenInvento** is a modern, self-hosted inventory management system engineered for clarity, speed, and deep flexibility. Whether organizing personal collections, household items, lab supplies, workshop tools, or business assets, OpenInvento gives you full control over your physical inventory without sending your data to third-party clouds.
+
+---
+
+## Key Features
+
+- **Intuitive Hierarchy**: Organize items naturally across **Inventories**, **Areas**, **Shelves**, and nested **Boxes** (containers/ bins).
+- **Fast Drag & Drop**: Easily reorganize your physical space by dragging articles and containers between areas, shelves, and boxes.
+- **Custom Fields & Categories**: Tailor fields per category (e.g., expiry dates for food/medicine, ISBNs for books, serial numbers for electronics) or globally across all items.
+- **QR Code & Barcode Integration**: Generate printable label sheets (PDF) in A4, A5, and Letter formats, and perform instant lookups using scanners or mobile cameras.
+- **Rich Media & Attachments**: Attach photos, invoices, receipts, datasheets, and manuals (PDF, DOCX, XLSX, etc.) directly to articles.
+- **Team & Family Sharing**: Multi-user support with invitation controls, allowing multiple users to access and collaborate within shared inventories.
+- **Stock Tracking & Alerts**: Track item quantities and receive low-stock notifications when replenishment is needed.
+- **Docker-Ready**: Hassle-free deployment using Docker and Docker Compose with persistent data volumes.
+- **REST API**: Full-featured API secured with API keys for custom integrations, automation scripts, and third-party tools.
+- **Responsive & Modern UI**: Built with a clean interface featuring complete dark mode support and optimized mobile views.
+
+---
+
+## User Interface
+
+OpenInvento is designed to look great and work seamlessly on both desktop workstations and mobile devices:
+
+### Desktop Experience
+<div style={{textAlign: 'center', marginBottom: '1.5rem'}}>
+  <img src="https://raw.githubusercontent.com/openinvento/openinvento/refs/heads/main/assets/screenshots/start_screen.png" width="48%" alt="Dashboard" style={{marginRight: '2%'}} />
+  <img src="https://raw.githubusercontent.com/openinvento/openinvento/refs/heads/main/assets/screenshots/areas_screen.png" width="48%" alt="Areas Overview" />
+</div>
+
+<div style={{textAlign: 'center', marginBottom: '1.5rem'}}>
+  <img src="https://raw.githubusercontent.com/openinvento/openinvento/refs/heads/main/assets/screenshots/areadetail_screen.png" width="48%" alt="Area Details" style={{marginRight: '2%'}} />
+  <img src="https://raw.githubusercontent.com/openinvento/openinvento/refs/heads/main/assets/screenshots/article_screen.png" width="48%" alt="Article Details" />
+</div>
+
+### Mobile Experience
+<div style={{textAlign: 'center'}}>
+  <img src="https://raw.githubusercontent.com/openinvento/openinvento/refs/heads/main/assets/screenshots/start_mobile_screen.png" width="30%" alt="Start Screen Mobile" style={{marginRight: '4%'}} />
+  <img src="https://raw.githubusercontent.com/openinvento/openinvento/refs/heads/main/assets/screenshots/areas_mobile_screen.png" width="30%" alt="Areas Mobile" />
+</div>
+
+---
+
+## Getting Started
+
+Ready to spin up your instance? Choose a guide below to begin:
+
+- **[Docker Compose Installation](./setup-installation/docker)**: The recommended way to run OpenInvento in production.
+- **[Configuration & Environment Variables](./setup-installation/configuration)**: Configure host URLs, security keys, admin accounts, and feature flags.
+- **[Updating & Backups](./setup-installation/updating-and-backups)**: Keep your instance updated and export regular data backups.
+- **[Core Concepts & Hierarchy](./openinvento/concepts)**: Learn how Inventories, Areas, Shelves, Boxes, and Articles interact.
+- **[External REST API](./openinvento/externalAPI)**: Integrate external tools and automate inventory actions using API keys.

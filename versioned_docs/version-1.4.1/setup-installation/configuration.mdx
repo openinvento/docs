@@ -1,0 +1,93 @@
+---
+sidebar_position: 2
+---
+
+# Configuration & Environment Variables
+
+OpenInvento is configured primarily through environment variables passed to the Docker container via an `.env` file or directly in your container runner.
+
+---
+
+## Environment Variables Reference
+
+Below is the complete reference table of all environment variables supported by OpenInvento:
+
+| Variable | Required | Default | Description |
+| :--- | :---: | :---: | :--- |
+| `APP_URL` | **Recommended** | `None` | Primary public URL of your OpenInvento instance. Supports `https://domain.com`, `http://localhost:8080`, or bare hosts like `example.com:8080`. Bare hosts default to `http://`. |
+| `APP_URLS` | No | `None` | Comma-separated list of additional URLs or hostnames where the application can be accessed (same format as `APP_URL`). |
+| `SECRET_KEY` | **Recommended** | Unsafe fallback | Secret key used for cryptographic signing, session verification, and CSRF tokens. Set a long, secure random value in production. |
+| `DATA_DIRECTORY` | No | `/data` | Path to the directory where the SQLite database, uploaded media files, and attachments are persisted. |
+| `INIT_ADMIN_USERNAME` | Required if admin auto-created | `None` | Username for the initial administrator user account. |
+| `INIT_ADMIN_PASSWORD` | Required if admin auto-created | `None` | Password for the initial administrator user account. You will be prompted to change this upon first login. |
+| `CREATE_INIT_ADMIN` | No | `true` | When set to `true`, automatically creates the initial admin if no users exist in the database. |
+| `ENABLE_SIGNUP` | No | `false` | When set to `true`, enables open public registration allowing visitors to create accounts. When `false`, registration is blocked. |
+| `ENABLE_UPDATE_CHECKER` | No | `true` | When set to `true`, OpenInvento queries the GitHub API once every 24 hours to check for new releases and alerts administrators. |
+| `ALLOW_INVENTORY_USER_INVITES` | No | `true` | When set to `true`, users can invite other registered users to access their inventories. |
+| `ENABLE_TASK_SCHEDULER` | No | `true` | When set to `true`, enables the task scheduler for background jobs. Strongly recommended for receiving in-app notifications and managing scheduled tasks. |
+---
+
+## URL & Host Configuration (`APP_URL` & `APP_URLS`)
+
+OpenInvento uses `APP_URL` and `APP_URLS` to automatically configure two critical Django security mechanisms:
+1. `ALLOWED_HOSTS`: Protects against HTTP Host header attacks.
+2. `CSRF_TRUSTED_ORIGINS`: Allows secure form submissions and API calls across trusted domains and protocols.
+
+### Best Practices:
+- **Include Scheme**: Always prefix your URL with `https://` if accessing over HTTPS so that CSRF origin verification passes.
+- **Port Specification**: If using a non-standard port (e.g. `8443` or `8080`), include it in the URL (e.g., `https://inventory.example.com:8443`). OpenInvento automatically strips the port for `ALLOWED_HOSTS` while preserving it for `CSRF_TRUSTED_ORIGINS`.
+- **Multiple Domains**: If accessing your instance via both an internal LAN IP and an external domain name, use `APP_URLS`:
+  ```bash
+  APP_URL=https://inventory.example.com
+  APP_URLS=http://192.168.1.100:8080,https://inventory.local
+  ```
+- **Origin Only**: Do not include subpaths in `APP_URL`. Supply the site origin only.
+
+---
+
+## Security & Secrets (`SECRET_KEY`)
+
+The `SECRET_KEY` is used for cryptographic signing. If left unset, OpenInvento will fall back to an unsafe default, which is unsuitable for production environments.
+
+To generate a secure key:
+```bash
+openssl rand -hex 32
+```
+
+Add the generated string to your `.env`:
+```bash
+SECRET_KEY=b4a92f08c3d9a105f2e8790b435210984a92f08c3d9a105f2e8790b43521098
+```
+
+---
+
+## Data Persistence (`DATA_DIRECTORY`)
+
+By default inside the container, data is stored at `/data`.
+
+This directory holds:
+- The SQLite database file (`db.sqlite3`)
+- User-uploaded article photos (`articles/`)
+- Attached documents and datasheets (`article-attachments/`)
+
+Always map a persistent Docker volume or host directory to this location:
+```yaml
+volumes:
+  - openinvento-data:/data
+```
+
+---
+
+## User Registration & Invites
+
+### Public Signup (`ENABLE_SIGNUP`)
+- **Default**: `false`
+- When set to `false`, new users cannot register through the signup page. Only instance administrators can add new users from the administrative panel.
+- When set to `true`, any visitor can register an account.
+
+### Inventory Sharing (`ALLOW_INVENTORY_USER_INVITES`)
+- **Default**: `true`
+- Controls whether inventory owners can invite other registered accounts to collaborate on an inventory.
+- :::warning Privacy Note
+  Enabling `ALLOW_INVENTORY_USER_INVITES` allows users to see other registered usernames and names when adding members to an inventory. If running a multi-tenant or public instance where users should not see each other, set this to `false`.
+  :::

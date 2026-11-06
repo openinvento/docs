@@ -51,6 +51,15 @@ const config: Config = {
           // Remove this to remove the "edit this page" links.
           editUrl:
             'https://github.com/openinvento/docs/tree/main/',
+          // The docs of the latest release (the first entry of versions.json) are the default.
+          // docs/ describes main, which may contain features that are not released yet.
+          versions: {
+            current: {
+              label: 'Next (unreleased)',
+              path: 'next',
+              banner: 'unreleased',
+            },
+          },
         },
         blog: {
           onUntruncatedBlogPosts: 'ignore',
@@ -95,6 +104,10 @@ const config: Config = {
           sidebarId: 'documentationDefaultSidebar',
           position: 'left',
           label: 'Documentation',
+        },
+        {
+          type: 'docsVersionDropdown',
+          position: 'right',
         },
         // Blog is currently not in use
         // {to: '/blog', label: 'Blog', position: 'left'},

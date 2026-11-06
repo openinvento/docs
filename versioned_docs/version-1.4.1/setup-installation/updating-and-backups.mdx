@@ -1,0 +1,133 @@
+---
+sidebar_position: 3
+---
+
+# Updating & Backups
+
+Keeping your OpenInvento installation up-to-date ensures you receive the latest features, security patches, and bug fixes. Because your database and media files are stored in a persistent volume, updating is straightforward and preserves all your data.
+
+---
+
+## Updating OpenInvento
+
+When OpenInvento starts, it automatically applies any pending database migrations before launching the application server.
+
+### With Docker Compose (Recommended)
+
+1. Navigate to the directory containing your `docker-compose.yml`:
+   ```bash
+   cd /path/to/openinvento
+   ```
+
+2. Pull the latest image from GitHub Container Registry:
+   ```bash
+   docker compose pull
+   ```
+
+3. Restart the container in detached mode:
+   ```bash
+   docker compose up -d
+   ```
+
+4. Check container logs to verify successful database migrations:
+   ```bash
+   docker compose logs -f
+   ```
+
+---
+
+### With Manual Docker Run
+
+1. Stop and remove the existing container:
+   ```bash
+   docker stop openinvento
+   docker rm openinvento
+   ```
+   *(Your data is preserved in the `openinvento-data` volume).*
+
+2. Pull the newest image:
+   ```bash
+   docker pull ghcr.io/openinvento/openinvento:latest
+   ```
+
+3. Re-run your `docker run` command with the same volume and environment options:
+   ```bash
+   docker run -d \
+     --name openinvento \
+     --restart unless-stopped \
+     -v openinvento-data:/data \
+     -p 8080:80 \
+     --env-file .env \
+     ghcr.io/openinvento/openinvento:latest
+   ```
+
+---
+
+## Backing Up Your Data
+
+OpenInvento provides multiple ways to back up your information, ranging from full system backups to inventory-specific CSV exports.
+
+### 1. Instance Full Backup (One-Click)
+
+Instance administrators can download a full archive containing the complete database and all uploaded files (photos and attachments) directly:
+
+1. Log in with an administrator account.
+2. Go to **Settings** &rarr; **Instance Settings**.
+3. Click **Download Backup**.
+
+Under the hood, this calls the `/api/instance-settings/backup/` endpoint, bundling the entire `DATA_DIRECTORY` into a compressed ZIP file named `openinvento-instance-backup.zip`.
+
+:::caution Admin Privileges Required
+The instance backup endpoint is restricted strictly to instance administrators because it archives the entire data store across all inventories.
+:::
+
+---
+
+### 2. Manual Volume Backup (Host-Level)
+
+You can also back up the Docker volume directly from the host filesystem or via a temporary helper container:
+
+```bash
+docker run --rm \
+  -v openinvento-data:/volume-data \
+  -v $(pwd):/backup \
+  alpine tar -czvf /backup/openinvento-backup-$(date +%Y%m%d).tar.gz -C /volume-data .
+```
+
+This creates a timestamped compressed `.tar.gz` archive of your entire data volume in your current directory.
+
+---
+
+### 3. Inventory CSV Export
+
+If you need a portable, human-readable export of a single inventory:
+
+1. Open your inventory.
+2. Navigate to **Inventory Settings**.
+3. Click **Export Inventory**.
+
+This generates a ZIP archive containing structured CSV files for your areas, shelves, boxes, categories, custom fields, and all articles.
+
+---
+
+## Restoring from a Backup
+
+To restore data from a previous volume backup archive:
+
+1. Stop the running OpenInvento container:
+   ```bash
+   docker compose down
+   ```
+
+2. Restore the files into the data volume:
+   ```bash
+   docker run --rm \
+     -v openinvento-data:/volume-data \
+     -v $(pwd):/backup \
+     alpine sh -c "rm -rf /volume-data/* && tar -xzvf /backup/openinvento-backup-YYYYMMDD.tar.gz -C /volume-data"
+   ```
+
+3. Restart the container:
+   ```bash
+   docker compose up -d
+   ```

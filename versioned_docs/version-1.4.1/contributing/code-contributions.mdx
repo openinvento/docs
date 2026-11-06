@@ -1,0 +1,97 @@
+---
+sidebar_position: 1
+---
+
+# Code Contributions
+
+Thank you for your interest in contributing to OpenInvento! We welcome bug fixes, architecture improvements, documentation updates, and new features from the community.
+
+---
+
+## Contributor License Agreement (CLA)
+
+Before submitting code to OpenInvento, please read the [OpenInvento Contributor License Agreement](https://github.com/openinvento/openinvento/blob/main/CLA/CLA_v1.md).
+
+All contributions submitted through GitHub pull requests must be covered by the CLA.
+
+### Required PR Comment
+When opening a pull request, you must post the following agreement comment in the PR discussion:
+
+> `I have read and understood the Contributor License Agreement, and I hereby agree to its terms.`
+
+By posting this comment, you confirm that:
+- You have read and understood the OpenInvento Contributor License Agreement.
+- You have the authority to submit the contribution.
+- You grant the rights described in the agreement to the project.
+
+The automated GitHub CLA bot will verify this comment before any pull request can be merged.
+
+---
+
+## Code Style & Guidelines
+
+To ensure consistency and quality across the codebase, please adhere to these core principles:
+
+### 1. Internationalization (i18n)
+- **Never hardcode user-facing strings** in frontend components.
+- Always use translation keys with `useTranslation()`:
+  ```tsx
+  import { useTranslation } from 'react-i18next';
+
+  const MyComponent = () => {
+    const { t } = useTranslation();
+    return <h1>{t('articles.title')}</h1>;
+  };
+  ```
+- Use nested, structured keys for new features (e.g., `inventory.shelves.emptyState`).
+- *Tip*: The VS Code extension **i18n Ally** makes managing and adding translation keys effortless.
+
+### 2. Mobile-First & Responsive Design
+- Every page and modal must work seamlessly on mobile devices and small screens.
+- Use Tailwind CSS responsive utility breakpoints (`sm:`, `md:`, `lg:`).
+
+### 3. Dark Mode Support
+- Every component must support both light and dark themes.
+- Use Tailwind's `dark:` modifier (e.g. `bg-white dark:bg-slate-900 text-gray-900 dark:text-gray-100`) or standard theme utility classes like `card-bg`.
+
+### 4. Focused Pull Requests
+- Keep PRs focused on a single issue or feature.
+- Avoid mixing formatting changes or unrelated file edits into a feature PR.
+
+---
+
+## Local Development Workflow
+
+### Backend (Django & DRF)
+The backend is located in `backend/` and requires Python 3.11+.
+
+```bash
+cd backend
+python -m venv .venv
+source .venv/bin/activate  # On Windows: .venv\Scripts\Activate.ps1
+pip install .
+python manage.py migrate
+python manage.py runserver
+```
+
+### Frontend (React & Vite)
+The frontend is located in `frontend/`.
+
+```bash
+cd frontend
+npm install
+npm run dev
+```
+
+---
+
+## Submitting a Pull Request
+
+1. Fork the [OpenInvento repository](https://github.com/openinvento/openinvento) and create a descriptive branch:
+   ```bash
+   git checkout -b feature/my-cool-feature
+   ```
+2. Commit your changes with clear, descriptive commit messages.
+3. Test your changes thoroughly on desktop and mobile viewports.
+4. Push your branch to GitHub and open a Pull Request.
+5. Post the required CLA agreement comment in your PR.
