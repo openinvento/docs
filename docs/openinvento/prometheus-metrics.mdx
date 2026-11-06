@@ -24,14 +24,14 @@ The numbers are counted from the database on every scrape, so all workers return
 1. Go to **Settings** &rarr; **Admin settings (instance)** &rarr; **Modules** and switch on **Prometheus metrics**. While the module is off, `/api/metrics/` answers `404`.
 2. Create an API key for the scraper under **Settings** &rarr; **API Keys** (see [Generating an API Key](./externalAPI#generating-an-api-key)).
 
-An API key is always required; a logged-in browser session is not enough, and requests without a valid key get `401`. What the key sees depends on its user:
+Scrapers need the API key because they have no browser session. To check the numbers yourself, open `/api/metrics/` while signed in. Requests without a valid key or session get `401`. What a request sees depends on its user:
 
-| Key of | Metrics |
+| User | Metrics |
 | :--- | :--- |
 | An instance administrator | Instance metrics and every inventory |
 | Any other user | Only the inventories the user is a member of |
 
-To end access, revoke the key under **Settings** &rarr; **API Keys**.
+To end a scraper's access, revoke its key under **Settings** &rarr; **API Keys**.
 
 ---
 
