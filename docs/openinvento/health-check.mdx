@@ -49,7 +49,8 @@ services:
       - .env
     # highlight-start
     healthcheck:
-      test: ["CMD-SHELL", "curl -f http://localhost/api/health || exit 1"]
+      # The image has no curl or wget; Python is always there.
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost/api/health', timeout=5)"]
       interval: 30s
       timeout: 10s
       retries: 3

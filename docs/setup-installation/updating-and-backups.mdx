@@ -50,7 +50,7 @@ When OpenInvento starts, it automatically applies any pending database migration
    docker pull ghcr.io/openinvento/openinvento:latest
    ```
 
-3. Re-run your `docker run` command with the same volume and environment options:
+3. Run the container again with **the same** volume and environment options as before, for example the `-e` options from the [installation](./docker#method-2-manual-docker-run). Keep the same `SECRET_KEY`. The example uses `--env-file .env`; if you installed with `-e` options and have no `.env`, put those same `-e` options in its place:
    ```bash
    docker run -d \
      --name openinvento \
@@ -85,16 +85,50 @@ The instance backup endpoint is restricted strictly to instance administrators b
 
 ### 2. Manual Volume Backup (Host-Level)
 
-You can also back up the Docker volume directly from the host filesystem or via a temporary helper container:
+You can also back up the Docker volume with a temporary helper container. Two things matter:
+
+- **The volume name.** Docker Compose prefixes volumes with the project name, which is the name of the directory with `docker-compose.yml`. With the [installation guide](./docker), the volume is called `openinvento_openinvento-data`; with the manual `docker run` installation, it is `openinvento-data`. Check with `docker volume ls`. A wrong name silently creates a new, empty volume, and the backup contains nothing.
+- **Stop OpenInvento first.** The database is a SQLite file. Copying it while OpenInvento writes to it can produce a broken copy.
+
+With Docker Compose:
 
 ```bash
-docker run --rm \
-  -v openinvento-data:/volume-data \
-  -v $(pwd):/backup \
-  alpine tar -czvf /backup/openinvento-backup-$(date +%Y%m%d).tar.gz -C /volume-data .
+backup=openinvento-backup-$(date +%Y%m%d-%H%M%S).tar.gz
+if docker compose stop; then
+  docker run --rm \
+    -v openinvento_openinvento-data:/volume-data \
+    -v "$(pwd)":/backup \
+    alpine tar -czvf "/backup/$backup" -C /volume-data . \
+    || { rm -f "$backup"; echo "Backup failed, partial archive removed." >&2; }
+  docker compose start
+else
+  echo "OpenInvento could not be stopped, no backup taken." >&2
+fi
 ```
 
+With the manual `docker run` installation:
+
+```bash
+backup=openinvento-backup-$(date +%Y%m%d-%H%M%S).tar.gz
+if docker stop openinvento; then
+  docker run --rm \
+    -v openinvento-data:/volume-data \
+    -v "$(pwd)":/backup \
+    alpine tar -czvf "/backup/$backup" -C /volume-data . \
+    || { rm -f "$backup"; echo "Backup failed, partial archive removed." >&2; }
+  docker start openinvento
+else
+  echo "OpenInvento could not be stopped, no backup taken." >&2
+fi
+```
+
+Nothing is archived if OpenInvento could not be stopped. If archiving fails, the partial archive is removed and the failure is reported; OpenInvento is started again either way. The time in the name keeps several backups of one day apart.
+
 This creates a timestamped compressed `.tar.gz` archive of your entire data volume in your current directory.
+
+:::caution Keep the SECRET_KEY with your backups
+The archive contains the data directory, but not your `.env`. Third-party provider API keys are encrypted with the `SECRET_KEY` (see [Secret Key](../security/secret-key)). Store your `.env` (or at least the `SECRET_KEY`) securely next to the backups, and use the same key when you restore, otherwise these API keys cannot be decrypted.
+:::
 
 ---
 
@@ -114,20 +148,21 @@ This generates a ZIP archive containing structured CSV files for your areas, she
 
 To restore data from a previous volume backup archive:
 
-1. Stop the running OpenInvento container:
+1. Stop OpenInvento:
    ```bash
-   docker compose down
+   docker compose stop        # manual installation: docker stop openinvento
    ```
 
-2. Restore the files into the data volume:
+2. Restore the files into the data volume. The archive is checked first; only if it can be read completely are the current files deleted and replaced:
    ```bash
    docker run --rm \
-     -v openinvento-data:/volume-data \
-     -v $(pwd):/backup \
-     alpine sh -c "rm -rf /volume-data/* && tar -xzvf /backup/openinvento-backup-YYYYMMDD.tar.gz -C /volume-data"
+     -v openinvento_openinvento-data:/volume-data \
+     -v "$(pwd)":/backup \
+     alpine sh -c "tar -tzf /backup/openinvento-backup-YYYYMMDD-HHMMSS.tar.gz > /dev/null && find /volume-data -mindepth 1 -delete && tar -xzvf /backup/openinvento-backup-YYYYMMDD-HHMMSS.tar.gz -C /volume-data"
    ```
+   Use the same volume name as for the backup (`openinvento-data` for the manual `docker run` installation).
 
-3. Restart the container:
+3. Start OpenInvento again:
    ```bash
-   docker compose up -d
+   docker compose start       # manual installation: docker start openinvento
    ```

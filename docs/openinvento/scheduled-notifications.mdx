@@ -4,11 +4,11 @@ sidebar_position: 9
 
 # Scheduled Notifications
 
-OpenInvento runs daily background jobs for date-field notifications, low-stock notifications, and update checks. Each job has its own configurable local time. All three jobs default to midnight (`00:00`).
+OpenInvento runs daily background jobs for date-field notifications, low-stock notifications, and update checks. Each job has its own configurable time. All three jobs default to midnight UTC (`00:00`).
 
 ## Configure job times
 
-Set the following environment variables using 24-hour `HH:MM` values:
+Set the following environment variables using 24-hour `HH:MM` values in **UTC**. OpenInvento runs in UTC regardless of the host's or container's time zone, so convert your local time: for 08:00 in Berlin (UTC+1 in winter, UTC+2 in summer), set `07:00` or `06:00`.
 
 | Variable | Default | Job |
 | :--- | :---: | :--- |

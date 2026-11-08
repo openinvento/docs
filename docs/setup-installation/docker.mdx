@@ -67,7 +67,9 @@ DATA_DIRECTORY=/data
 # Initial Administrator Credentials (used only on first startup)
 CREATE_INIT_ADMIN=true
 INIT_ADMIN_USERNAME=admin
-INIT_ADMIN_PASSWORD=change-this-password
+# Keep the single quotes: Compose would otherwise replace $... in the password with variables.
+# Choose a password without single quotes.
+INIT_ADMIN_PASSWORD='<set your own password before the first start>'
 
 # Feature Flags
 ENABLE_SIGNUP=false
@@ -119,7 +121,7 @@ docker run -d \
   -e DATA_DIRECTORY=/data \
   -e APP_URL=http://localhost:8080 \
   -e INIT_ADMIN_USERNAME=admin \
-  -e INIT_ADMIN_PASSWORD=change-this-password \
+  -e INIT_ADMIN_PASSWORD='<set your own password before the first start>' \
   -e CREATE_INIT_ADMIN=true \
   -e ENABLE_SIGNUP=false \
   -e ENABLE_UPDATE_CHECKER=true \
@@ -152,4 +154,9 @@ When exposing OpenInvento publicly with HTTPS:
    - `Host: $host`
    - `X-Forwarded-For: $proxy_add_x_forwarded_for`
    - `X-Forwarded-Proto: https`
+
+    The proxy must set `X-Forwarded-Proto` itself and not pass on a value sent by the client. Caddy and Traefik do this by default; with Nginx, use `proxy_set_header X-Forwarded-Proto $scheme;`.
+
+    From v1.5.0, when `APP_URL` and every entry of `APP_URLS` use `https://`, OpenInvento sends the session and CSRF cookies with the `Secure` flag and takes the scheme from `X-Forwarded-Proto` (the Nginx inside the container passes it on). See [URL & Host Configuration](./configuration#url--host-configuration-app_url--app_urls).
+
 3. Configure trusted proxy IP ranges and the proxy hop count for rate limiting. See [Rate Limiting and Trusted Proxies](../security/ratelimits).
