@@ -1,0 +1,39 @@
+# Rate Limiting and Trusted Proxies
+
+OpenInvento uses layered rate limiting to reduce password-guessing, account-enumeration, and denial-of-service risk. The application applies Django REST Framework (DRF) throttling to authentication views, while the bundled nginx applies an additional request-rate limit before traffic reaches Django.
+
+## Configure Trusted Proxies
+
+When OpenInvento is behind an external reverse proxy, configure the proxy addresses that the application is allowed to trust:
+
+```bash
+TRUSTED_PROXY_IPS=10.0.0.10/32,10.0.1.0/24
+DRF_NUM_PROXIES=1
+```
+
+- `TRUSTED_PROXY_IPS` is a comma-separated list of trusted proxy IP addresses or CIDR ranges. Restrict it to the actual addresses or networks of your reverse proxies.
+- `DRF_NUM_PROXIES` is the number of trusted proxy hops seen by Django REST Framework when it resolves the client IP. Use `1` with the bundled nginx. Increase it only when the deployment adds known, trusted proxy hops.
+- Never set `TRUSTED_PROXY_IPS` to `0.0.0.0/0`. That trusts forwarded client-IP headers from every source and allows clients to bypass IP-based throttling.
+
+The external proxy must preserve the client address and connection scheme when forwarding requests:
+
+```nginx
+proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+proxy_set_header X-Forwarded-Proto $scheme;
+```
+
+Only trust these headers when requests can reach the application through the configured proxy path. Do not expose the application container directly to untrusted networks, because a direct client could otherwise submit its own forwarded headers.
+
+## Protection Layers
+
+### DRF throttling
+
+DRF throttling protects authentication views inside the application. It uses the resolved client IP, so `TRUSTED_PROXY_IPS` and `DRF_NUM_PROXIES` must match the actual proxy chain for limits to apply to the real client rather than the proxy itself.
+
+Throttling is an abuse-control measure, not a replacement for strong passwords, MFA at an identity provider, or a network-level firewall. It also does not prevent all denial-of-service traffic because requests still reach the application stack before they are rejected.
+
+### Bundled nginx limits
+
+The bundled nginx applies request-rate limits at the edge, before requests are forwarded to Django. This reduces load from bursts and repeated requests, including traffic that would otherwise consume application workers. Keep this layer enabled when using the bundled deployment and retain an equivalent limit in an external proxy when nginx is replaced.
+
+External proxy limits should complement, rather than replace, the application throttles. Make sure the external proxy forwards `X-Forwarded-For` and `X-Forwarded-Proto` consistently, and configure its limits with awareness of shared NAT addresses so legitimate users are not grouped too aggressively.

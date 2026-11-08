@@ -32,6 +32,8 @@ Below is the complete reference table of all environment variables supported by 
 | `OIDC_CA_BUNDLE` | No | empty | CA certificate (PEM) for a provider with a private or self-signed certificate. See [Single Sign-On](./single-sign-on#providers-with-a-private-or-self-signed-certificate). Available from v1.5.0. |
 | `DISABLE_LOCAL_LOGIN` | No | `false` | When set to `true`, disables password login and public signup for all accounts except `LOCAL_LOGIN_USERS`. Available from v1.5.0. |
 | `LOCAL_LOGIN_USERS` | No | `INIT_ADMIN_USERNAME` | Comma-separated break-glass usernames that keep password login when `DISABLE_LOCAL_LOGIN` is enabled. Available from v1.5.0. |
+| `TRUSTED_PROXY_IPS` | No | `None` | Comma-separated CIDR ranges for reverse proxies trusted to provide client IP headers. See [Rate Limiting and Trusted Proxies](../security/ratelimits). |
+| `DRF_NUM_PROXIES` | No | `0` | Number of trusted reverse-proxy hops seen by Django REST Framework when determining the client IP for throttling. Use `1` with the bundled nginx. |
 ---
 
 ## URL & Host Configuration (`APP_URL` & `APP_URLS`)
