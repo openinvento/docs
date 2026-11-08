@@ -1,0 +1,64 @@
+---
+sidebar_position: 3
+---
+
+# Barcodes & QR Labels
+
+Physical inventory is only as good as your ability to identify and locate items quickly. OpenInvento includes built-in barcode and QR code capabilities to streamline item tracking, scanning, and label printing.
+
+---
+
+## Unique System Identifiers
+
+Every component in OpenInvento—including **Areas**, **Shelves**, **Boxes**, and **Articles**—is automatically assigned a unique alphanumeric **identifier** (e.g. `X7k9P2mQ1a`).
+
+These identifiers are:
+- Compact and optimized for fast barcode rendering and camera scanning.
+- Permanent and uniquely indexed across your inventory.
+- Human-readable directly below the code on printed labels.
+
+---
+
+## Generating Printable PDF Labels
+
+OpenInvento allows you to export ready-to-print PDF label sheets tailored for standard label paper or sticker sheets:
+
+1. Select one or more items (articles, boxes, shelves, or areas) from the inventory view.
+2. Click **Print Labels** in the action toolbar.
+3. Choose your print preferences:
+   - **Code Type**:
+     - `QR Code`: High-density 2D matrix code; easily scanned by smartphones even at smaller dimensions.
+     - `Barcode (Code128)`: Standard 1D linear barcode; ideal for handheld laser or optical USB/Bluetooth scanners.
+   - **Paper Size**: `A4`, `A5`, or `Letter`.
+   - **Sheet Layout**:
+     - `Vertical`: 4 columns &times; 2 rows (8 labels per page).
+     - `Horizontal`: 2 columns &times; 4 rows (8 labels per page).
+4. Click **Generate PDF** to download the label sheet.
+
+### Printed Label
+
+Each printed cell includes:
+1. **Item Title**: Bold item name (up to 32 characters).
+2. **Code**: Centered high-resolution vector QR code or Code128 barcode.
+3. **Reference Footer**: Object type and identifier (e.g., `article: X7k9P2mQ1a` or `box: K4b1L9vA0e`).
+
+---
+
+## Scanning & Fast Lookups
+
+When you need to find an item or verify what is stored inside a box:
+
+1. Click the **Scan Code** icon in the navigation bar.
+2. Scan the code using your mobile device's camera or a connected barcode scanner.
+3. OpenInvento queries the `/api/codes/lookup/` endpoint and immediately opens the detailed view of the matched article, box, shelf, or area.
+
+---
+
+## Custom Barcode Fields
+
+In addition to system-generated identifiers, articles can store manufacturer barcodes, ISBNs, or serial numbers:
+
+- If you categorize an item under **Books**, it includes an `isbn` barcode field.
+- If you categorize an item under **Electronics**, it includes a `serial_number` barcode field.
+- If you categorize an item under **Medicine**, it includes a `pzn_barcode` field.
+- You can add custom barcode fields to any category in **Inventory Settings** &rarr; **Categories**.

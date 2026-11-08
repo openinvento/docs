@@ -1,0 +1,96 @@
+---
+sidebar_position: 1
+---
+
+# Core Concepts & Architecture
+
+To model your physical spaces effectively, OpenInvento uses a hierarchical data model designed to mirror the real world. This page explains how containers, items, custom fields, and categories relate to one another.
+
+---
+
+## The Hierarchy
+
+OpenInvento stores locations and items as inventory entries. Each entry has a type (area, shelf, box, or article) and can have a parent entry. The hierarchy commonly looks like this:
+
+```
+Inventory
+ └── Areas (e.g., Workshop, Kitchen, Garage)
+      ├── Shelves (e.g., Heavy Rack A, Tool Cabinet)
+      │    └── Boxes (e.g., Screws Bin, Drill Bit Box)
+      │         └── Articles (e.g., M4 Screws, SDS Drill Bits)
+      └── Boxes (e.g., Storage Bin directly in Area)
+           ├── Sub-Boxes (nested boxes inside boxes)
+           └── Articles (e.g., Multimeter, Soldering Iron)
+```
+
+### 1. Inventory
+The top-level container for all your items, locations, and settings.
+- Every new account gets a personal inventory which can be shared with others.
+- A user can be a member of multiple inventories and switch between them in the sidebar.
+
+### Inventory entries
+
+Areas, shelves, boxes, and articles share the same underlying inventory-entry model. The entry type determines which fields and relationships apply. Entries belong to one inventory, and their parent links define where they appear in the hierarchy.
+
+### 2. Areas
+Areas represent distinct physical spaces, rooms, or zones (e.g., *Garage*, *Pantry*, *Electronics Lab*, *Office*).
+- Every Shelf and Box is placed under an Area, directly or through a permitted parent relationship.
+- Articles can be placed directly in an Area if they are standalone (e.g., a lawnmower in the *Garage*).
+
+### 3. Shelves
+Shelves represent physical shelving units, bookcases, or wall racks inside an Area.
+- Each Shelf belongs to a specific Area.
+- Shelves can hold Articles directly, or contain Boxes.
+
+### 4. Boxes (Boxes & Bins)
+Boxes represent movable containers such as plastic storage tubs, toolbox drawers, bins, or crates.
+- **Flexible Placement**: A Box can sit directly on the floor of an Area, or be placed onto a specific Shelf.
+- **Nested Sub-Boxes**: Boxes can contain other Boxes! For instance, a large *Tackle Box* can contain several small *Component Trays*.
+- Moving a Box changes the box's parent. Its nested entries remain attached to it and move with the hierarchy.
+
+### 5. Articles
+Articles are the physical items you want to keep track of.
+- An Article can be located:
+  - Directly in an **Area**
+  - On a **Shelf**
+  - Inside a **Box**
+- **Attributes**:
+  - **Name & Description**: Detailed notes up to 750 characters.
+  - **Quantity & Stock Tracking**: Toggle stock tracking to monitor quantities and receive low-stock alerts.
+  - **Photo**: Upload an image (`.jpg`, `.jpeg`, `.png`) for visual identification.
+  - **Attachments**: Attach manuals, receipts, or spec sheets (`.pdf`, `.docx`, `.xlsx`, `.csv`, `.zip`).
+  - **System Identifier**: A unique random alphanumeric code automatically assigned for Barcode/QR scanning.
+
+---
+
+## Categories & Custom Fields
+
+Physical items have vastly different attributes. A box of milk needs an *expiration date*, a book needs an *author* and *ISBN*, and an electronic component needs a *serial number* or *operating voltage*.
+
+OpenInvento allows you to configure dynamic custom fields either **globally** or **per category**.
+
+### Supported Field Types
+
+| Field Type | Input Element | Example Use Case |
+| :--- | :--- | :--- |
+| `text` | Single-line text input | Brand, Model, Author, Location note |
+| `number` | Numeric stepper | Page count, Warranty months, Voltage |
+| `boolean` | Toggle checkbox | Read status, Prescription required, Insured |
+| `date` | Date picker | Expiry date, Purchase date |
+| `barcode` | Scannable code field | ISBN, EAN, Serial number, PZN |
+| `select` | Dropdown menu with defined options | Stock level (`low`, `medium`, `high`), Condition |
+
+---
+
+### Default Categories
+
+When a new inventory is created, OpenInvento automatically provisions a set of sensible default categories and fields:
+
+- **Food**: `barcode` (Barcode), `expiration_date` (Date)
+- **Books**: `isbn` (Barcode), `author` (Text), `pages` (Number), `read_status` (Boolean)
+- **Electronics**: `serial_number` (Barcode), `purchase_date` (Date), `warranty_months` (Number), `has_insurance` (Boolean)
+- **Clothing**: `brand` (Text), `size` (Text), `quantity` (Number)
+- **Medicine**: `pzn_barcode` (Barcode), `expiry` (Date), `prescription_required` (Boolean)
+- **Global Fields**: `minimum_quantity` (Number), `stock_level` (Select: low / medium / high)
+
+You can create, modify, or delete categories and custom fields at any time in **Inventory Settings** &rarr; **Categories**.

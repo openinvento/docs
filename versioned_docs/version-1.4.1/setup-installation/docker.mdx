@@ -1,0 +1,154 @@
+---
+sidebar_position: 1
+---
+
+# Docker Installation
+
+The recommended and simplest way to run OpenInvento is using **Docker** and **Docker Compose**. All backend services, database migrations, and static frontend assets are bundled into a single optimized container image hosted on GitHub Container Registry (`ghcr.io/openinvento/openinvento`).
+
+---
+
+## Prerequisites
+
+Before starting, ensure you have installed:
+- [Docker Engine](https://docs.docker.com/engine/install/) (v20.10 or newer)
+- [Docker Compose](https://docs.docker.com/compose/install/) (Compose V2 recommended)
+
+---
+
+## Method 1: Docker Compose (Recommended)
+
+Docker Compose allows you to define your configuration cleanly in version-controlled files.
+
+### 1. Create a Project Directory
+
+Create a directory for your OpenInvento deployment:
+
+```bash
+mkdir openinvento && cd openinvento
+```
+
+### 2. Create `docker-compose.yml`
+
+Create a `docker-compose.yml` file with the following contents:
+
+```yaml title="docker-compose.yml"
+services:
+  openinvento:
+    image: ghcr.io/openinvento/openinvento:latest
+    container_name: openinvento
+    restart: unless-stopped
+    ports:
+      - "8080:80"
+    volumes:
+      - openinvento-data:/data
+    env_file:
+      - .env
+
+volumes:
+  openinvento-data:
+    driver: local
+```
+
+### 3. Create `.env`
+
+Create a `.env` file in the same directory to configure your instance:
+
+```bash title=".env"
+# The public URL where OpenInvento will be accessed
+APP_URL=http://localhost:8080
+
+# Secret key for Django session and security signing (replace with a long random string)
+SECRET_KEY=change-this-to-a-very-long-and-secure-random-secret-key
+
+# Storage path inside the container
+DATA_DIRECTORY=/data
+
+# Initial Administrator Credentials (used only on first startup)
+CREATE_INIT_ADMIN=true
+INIT_ADMIN_USERNAME=admin
+INIT_ADMIN_PASSWORD=change-this-password
+
+# Feature Flags
+ENABLE_SIGNUP=false
+ENABLE_UPDATE_CHECKER=true
+ALLOW_INVENTORY_USER_INVITES=true
+```
+
+:::tip Generating a Secret Key
+You can generate a secure random secret key with OpenSSL:
+```bash
+openssl rand -hex 32
+```
+:::
+
+### 4. Start the Application
+
+Launch OpenInvento in the background:
+
+```bash
+docker compose up -d
+```
+
+View the startup logs to ensure everything initialized properly:
+
+```bash
+docker compose logs -f
+```
+
+---
+
+## Method 2: Manual Docker Run
+
+If you prefer using pure Docker commands without Compose, you can run OpenInvento directly:
+
+### 1. Create a Persistent Data Volume
+
+```bash
+docker volume create openinvento-data
+```
+
+### 2. Run the Container
+
+```bash
+docker run -d \
+  --name openinvento \
+  --restart unless-stopped \
+  -v openinvento-data:/data \
+  -p 8080:80 \
+  -e DATA_DIRECTORY=/data \
+  -e APP_URL=http://localhost:8080 \
+  -e INIT_ADMIN_USERNAME=admin \
+  -e INIT_ADMIN_PASSWORD=change-this-password \
+  -e CREATE_INIT_ADMIN=true \
+  -e ENABLE_SIGNUP=false \
+  -e ENABLE_UPDATE_CHECKER=true \
+  -e ALLOW_INVENTORY_USER_INVITES=true \
+  -e SECRET_KEY=replace-with-a-long-random-secret \
+  ghcr.io/openinvento/openinvento:latest
+```
+
+---
+
+## First Login & Initial Setup
+
+1. Open your browser and navigate to `http://localhost:8080` (or your configured `APP_URL`).
+2. Log in using your initial administrator username (`INIT_ADMIN_USERNAME`) and password (`INIT_ADMIN_PASSWORD`).
+3. Upon first login, you will be prompted immediately to change your password for security.
+4. Once completed, your default inventory is created and ready for use.
+
+:::info Initial Admin Auto-Creation
+The initial administrator account is created only when the database contains no users. If the database already contains users, `CREATE_INIT_ADMIN` is ignored and will not overwrite existing credentials.
+:::
+
+---
+
+## Running Behind a Reverse Proxy (Nginx, Traefik, Caddy)
+
+When exposing OpenInvento publicly with HTTPS:
+
+1. Set `APP_URL` to your full public HTTPS URL, for example: `APP_URL=https://inventory.example.com`.
+2. Ensure your reverse proxy forwards standard HTTP headers:
+   - `Host: $host`
+   - `X-Forwarded-For: $proxy_add_x_forwarded_for`
+   - `X-Forwarded-Proto: https`

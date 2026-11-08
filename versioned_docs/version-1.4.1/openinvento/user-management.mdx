@@ -1,0 +1,62 @@
+---
+sidebar_position: 4
+---
+
+# User Management & Collaboration
+
+OpenInvento supports multiple users, team collaboration, and inventory sharing while maintaining fine-grained control over registration and invites.
+
+---
+
+## User Roles
+
+OpenInvento distinguishes between two primary user levels:
+
+### 1. Instance Administrators
+- Created during initial setup via `INIT_ADMIN_USERNAME` / `INIT_ADMIN_PASSWORD` or designated by other admins.
+- Full access to **Instance Settings**, user management, backup downloads (`/api/instance-settings/backup/`), and release update alerts.
+- Can create, edit, or delete user accounts across the system.
+
+### 2. Standard Users
+- Have access to inventories to which they belong or have been invited.
+- Can create and modify areas, shelves, boxes, articles, categories, and generate API keys for their own accounts.
+- Cannot view or modify server-wide settings or backups.
+
+---
+
+## Shared Inventories & Invitations
+
+Inventories in OpenInvento can be collaborative spaces shared among multiple team members, lab partners, or family members.
+
+### Inviting Members
+
+If `ALLOW_INVENTORY_USER_INVITES=true` is enabled in your configuration:
+1. Navigate to **Inventory Settings** &rarr; **Members**.
+2. Select a registered user from the **Available Users** list.
+3. Click **Add Member**.
+
+The invited user immediately gains full access to browse, add, modify, and manage all components within that inventory.
+
+### Removing Members
+
+1. In **Inventory Settings** &rarr; **Members**, click **Remove** next to the user.
+2. If the last remaining user is removed from an inventory, the inventory and its contents are safely deleted.
+
+:::info User Discovery Notice
+When `ALLOW_INVENTORY_USER_INVITES` is enabled, registered users can view usernames and display names of other accounts when inviting members. If you are operating a private multi-user setup where users must remain isolated, set `ALLOW_INVENTORY_USER_INVITES=false`.
+:::
+
+---
+
+## Notifications & Low-Stock Alerts
+
+OpenInvento includes an in-app notification center that keeps you informed of critical events:
+
+### Low-Stock Alerts
+When an article has **Stock Tracking** enabled and its `quantity` drops to or below its `minimum_quantity` threshold:
+- A low-stock notification is automatically generated for all members of the inventory.
+- Notifications display an alert badge in the navigation bar.
+- Once restocked, the notification can be dismissed or marked as read.
+
+### System & Update Alerts
+Instance administrators automatically receive notifications when a newer version of OpenInvento is released on GitHub.

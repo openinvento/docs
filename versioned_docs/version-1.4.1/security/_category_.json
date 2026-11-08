@@ -1,0 +1,8 @@
+{
+  "label": "Security",
+  "position": 3,
+  "link": {
+    "type": "generated-index",
+    "description": "Learn about the security features and best practices for the OpenInvento application."
+  }
+}

@@ -1,0 +1,61 @@
+---
+sidebar_position: 2
+---
+
+# Translations & Localization
+
+OpenInvento is designed to be accessible to users worldwide. Translating OpenInvento into your native language is one of the most impactful ways to contribute to the project!
+
+---
+
+## Architecture Overview
+
+The OpenInvento frontend uses `react-i18next` for all localization:
+- Translation dictionaries are stored as JSON files inside `frontend/src/locales/` (or equivalent translation directory).
+- All UI strings are mapped to hierarchical keys (for example, `common.save`, `articles.actions.delete`).
+
+---
+
+## Recommended Tool: i18n Ally
+
+For local development in Visual Studio Code, we strongly recommend the **[i18n Ally](https://marketplace.visualstudio.com/items?itemName=Lokalise.i18n-ally)** extension.
+
+With i18n Ally:
+- You see inline translations directly inside JSX/TSX files instead of raw translation keys.
+- Missing translation keys are automatically highlighted in your editor.
+- You can add or edit translations in multiple languages side-by-side with a single click.
+
+---
+
+## Translation Guidelines
+
+When adding or updating translations:
+
+1. **Use Nested JSON Keys**: Keep related strings grouped logically:
+   ```json title="locales/en/translation.json"
+   {
+     "inventory": {
+       "title": "Inventory Overview",
+       "empty": "No items found",
+       "actions": {
+         "create": "New Item",
+         "export": "Export CSV"
+       }
+     }
+   }
+   ```
+2. **Never Hardcode Text**: If you find an untranslated string in the UI, replace it with a call to `t('...')` and add the corresponding key in all locale files.
+3. **Keep Tone Clear and Consistent**: Use standard terminology for common actions (*Save*, *Cancel*, *Delete*, *Confirm*).
+
+---
+
+## Adding a New Language
+
+To contribute a new language to OpenInvento:
+
+1. Create a new locale folder under `frontend/src/locales/<language-code>/` (e.g. `de`, `fr`, `es`).
+2. Copy the base English strings (`locales/en/`) into your new folder.
+3. Translate the string values into your target language.
+4. Register the new locale in the frontend i18n initialization file (`frontend/src/i18n.ts`).
+5. Verify your translations locally by starting the frontend development server and selecting the new language from your profile settings.
+6. Open a pull request on GitHub and remember to post the required CLA agreement comment!

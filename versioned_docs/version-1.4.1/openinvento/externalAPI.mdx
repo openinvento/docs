@@ -1,0 +1,371 @@
+---
+sidebar_position: 7
+---
+
+# External REST API
+
+OpenInvento provides a comprehensive, RESTful API that enables you to automate inventory workflows, integrate custom barcode scanners, sync with ERP/e-commerce systems, or build custom dashboards.
+
+---
+
+## Authentication
+
+All external API requests authenticate using an **API Key**.
+
+### Generating an API Key
+
+1. Log in to the OpenInvento web interface.
+2. Navigate to **Settings** &rarr; **API Keys**.
+3. Click **Create API Key**, enter a descriptive label (e.g. `Warehouse Scanner Script`), and confirm.
+4. Copy your secret API key immediately.
+
+:::caution Secret Key Visibility
+The full key is only displayed once upon creation. Store it securely in your secrets manager or `.env` file.
+:::
+
+---
+
+### Request Headers
+
+Include the API key in the `Authorization` header of every HTTP request:
+
+```http
+Authorization: Api-Key <YOUR_API_KEY>
+Content-Type: application/json
+```
+
+Example `curl` request:
+
+```bash
+curl -H "Authorization: Api-Key oiv_live_abc123456789..." \
+     -H "Content-Type: application/json" \
+     http://localhost:8080/api/inventories/
+```
+
+---
+
+## Response Status Codes
+
+| Code | Meaning |
+| :--- | :--- |
+| `200 OK` | The request succeeded and returned the requested data. |
+| `201 Created` | A new entity was successfully created. |
+| `204 No Content` | The deletion or update succeeded with no body returned. |
+| `400 Bad Request` | Missing or invalid request parameters/payload. |
+| `401 Unauthorized` | Invalid, revoked, or missing API key. |
+| `403 Forbidden` | Access denied to the requested inventory or resource. |
+| `404 Not Found` | The requested object does not exist. |
+
+---
+
+## Endpoints
+
+### 1. Inventories
+
+#### List Accessible Inventories
+```http
+GET /api/inventories/
+```
+
+**Response:**
+```json
+[
+  {
+    "uuid": "4f9d2a3e-7a1b-4b2e-8c3d-1e2f3a4b5c6d",
+    "name": "Main Workshop",
+    "identifier": "k8M2pQ9x",
+    "updated_at": "2026-10-18T14:30:00Z"
+  }
+]
+```
+
+#### Export Inventory to CSV
+```http
+GET /api/inventories/{inventory_uuid}/export/
+```
+Returns a `ZIP` file containing CSV data for inventory entries. Separate area, shelf, box, and article exports are no longer provided.
+
+---
+
+### 2. Inventory Entries
+
+Areas, shelves, boxes, and articles are represented by inventory entries. Each entry has a `type` (`area`, `shelf`, `box`, or `article`) and an optional `parent`. Use the entry type to determine which fields apply.
+
+#### List Entries
+```http
+GET /api/entries/?inventory={inventory_uuid}
+```
+You can filter by type or parent, for example `?inventory={inventory_uuid}&type=article` or `?inventory={inventory_uuid}&parent={entry_uuid}`.
+
+#### Create Entry
+```http
+POST /api/entries/
+```
+```json
+{
+  "inventory": "4f9d2a3e-7a1b-4b2e-8c3d-1e2f3a4b5c6d",
+  "type": "article",
+  "parent": "3c4d5e6f-7a8b-9c0d-1e2f-3a4b5c6d7e8f",
+  "name": "Raspberry Pi 5 (8GB)",
+  "description": "Single-board computer with active cooler",
+  "quantity": 3,
+  "stock_tracking": true,
+  "category": "8a7b6c5d-4e3f-2a1b-0c9d-8e7f6a5b4c3d",
+  "field_values": []
+}
+```
+For a root area, use `"type": "area"` and omit `parent`. Allowed parent and child types are validated by the API.
+
+#### Update Entry
+```http
+PATCH /api/entries/{entry_uuid}/
+```
+```json
+{
+  "parent": "7b8a1c2d-3e4f-5a6b-7c8d-9e0f1a2b3c4d"
+}
+```
+Moving a shelf or box changes that entry's location; its contents remain attached through their parent relationships.
+
+#### Delete Entry
+```http
+DELETE /api/entries/{entry_uuid}/
+```
+
+#### Article Field Values
+
+Article responses include `field_values` and `category_fields`.
+
+`field_values` is returned as a list of objects:
+
+```json
+[
+  {
+    "field": "9d8c7b6a-5e4f-3a2b-1c0d-9e8f7a6b5c4d",
+    "key": "serial-number",
+    "value": "RP5-8G-2026-X89",
+    "notify_on_date": false
+  }
+]
+```
+
+- `field`: UUID of the `CategoryField`.
+- `key`: field's generated technical key.
+- `value`: stored JSON value.
+- `notify_on_date`: whether a date notification is enabled for this value.
+
+The `category_fields` response contains the field definitions applicable to the article: global fields (`category: null`) and, when the article has a category, fields assigned to that category. Supported `field_type` values are `text`, `number`, `boolean`, `date`, `barcode`, and `select`. `options` is a JSON list used for field options.
+
+When submitting `field_values`, each item must include a string `field` UUID. Field IDs must belong to the same inventory and may not be duplicated in the submitted list. `notify_on_date` must be a boolean; only date fields may set it to `true`. The serializer updates submitted values but does not delete existing values omitted from the list.
+
+#### Article Images and Attachments
+
+The article `image` field accepts JPG, JPEG, and PNG images. Article attachments support JPG, JPEG, PNG, PDF, DOC, DOCX, ODT, TXT, RTF, XLS, XLSX, CSV, PPT, PPTX, and ZIP files. The maximum file size is configured by `MAX_FILE_SIZE`.
+
+---
+
+### 3. Article Categories
+
+#### List Article Categories
+```http
+GET /api/article-categories/?inventory={inventory_uuid}
+```
+
+Category responses include `category_fields`, which lists the custom fields assigned to that category (global fields are not included in this category-specific list).
+
+Example response:
+```json
+{
+  "uuid": "8a7b6c5d-4e3f-2a1b-0c9d-8e7f6a5b4c3d",
+  "identifier": "C8k2M1p0",
+  "inventory": "4f9d2a3e-7a1b-4b2e-8c3d-1e2f3a4b5c6d",
+  "created_at": "2026-10-18T12:00:00Z",
+  "updated_at": "2026-10-18T12:00:00Z",
+  "name": "Electronics",
+  "category_fields": [
+    {
+      "uuid": "9d8c7b6a-5e4f-3a2b-1c0d-9e8f7a6b5c4d",
+      "identifier": "F8k2M1p0",
+      "inventory": "4f9d2a3e-7a1b-4b2e-8c3d-1e2f3a4b5c6d",
+      "created_at": "2026-10-18T12:00:00Z",
+      "updated_at": "2026-10-18T12:00:00Z",
+      "key": "serial-number",
+      "label": "Serial Number",
+      "field_type": "text",
+      "category": "8a7b6c5d-4e3f-2a1b-0c9d-8e7f6a5b4c3d",
+      "options": []
+    }
+  ]
+}
+```
+
+#### Create Article Category
+```http
+POST /api/article-categories/
+```
+```json
+{
+  "inventory": "4f9d2a3e-7a1b-4b2e-8c3d-1e2f3a4b5c6d",
+  "name": "Electronics"
+}
+```
+
+#### Update Article Category
+```http
+PATCH /api/article-categories/{category_uuid}/
+```
+
+#### Delete Article Category
+```http
+DELETE /api/article-categories/{category_uuid}/
+```
+
+### 4. Category Fields
+
+Category fields define custom fields that can be used by articles. Use the list endpoint to retrieve field UUIDs for the `field_values` property when creating or updating articles.
+
+#### List Category Fields
+```http
+GET /api/category-fields/?inventory={inventory_uuid}
+```
+
+#### Create Category Field
+```http
+POST /api/category-fields/
+```
+```json
+{
+  "inventory": "4f9d2a3e-7a1b-4b2e-8c3d-1e2f3a4b5c6d",
+  "label": "Serial Number",
+  "field_type": "text",
+  "category": "8a7b6c5d-4e3f-2a1b-0c9d-8e7f6a5b4c3d",
+  "options": []
+}
+```
+
+#### Update Category Field
+```http
+PATCH /api/category-fields/{field_uuid}/
+```
+
+#### Delete Category Field
+```http
+DELETE /api/category-fields/{field_uuid}/
+```
+
+Fields are `inventory`, `label`, `field_type`, `category`, and `options`. The response also includes `uuid`, `identifier`, `created_at`, and `updated_at`. The `key` is generated automatically from the label and is read-only.
+
+Supported `field_type` values are `text`, `number`, `boolean`, `date`, `barcode`, and `select`. Use `options` to provide options for a select field. Set `category` to `null` to define a global field. Global fields are included in each article's `category_fields`; category-specific fields are included when they belong to the article's selected category. The serializer checks that the selected category belongs to the same inventory.
+
+Example response:
+```json
+{
+  "uuid": "9d8c7b6a-5e4f-3a2b-1c0d-9e8f7a6b5c4d",
+  "identifier": "F8k2M1p0",
+  "inventory": "4f9d2a3e-7a1b-4b2e-8c3d-1e2f3a4b5c6d",
+  "created_at": "2026-10-18T12:00:00Z",
+  "updated_at": "2026-10-18T12:00:00Z",
+  "key": "serial-number",
+  "label": "Serial Number",
+  "field_type": "text",
+  "category": "8a7b6c5d-4e3f-2a1b-0c9d-8e7f6a5b4c3d",
+  "options": []
+}
+```
+
+---
+
+### 5. Search
+
+Quickly search inventory entries across an inventory:
+
+```http
+GET /api/search/?inventory={inventory_uuid}&q=Raspberry
+```
+
+**Response:**
+```json
+[
+  {
+    "uuid": "e1f2a3b4-c5d6-7e8f-9a0b-1c2d3e4f5a6b",
+    "name": "Raspberry Pi 5 (8GB)",
+    "quantity": 2,
+    "identifier": "R8k2M1p0"
+  }
+]
+```
+
+---
+
+### 6. Barcode & QR Code Operations
+
+#### Code Lookup
+Resolve any scanned identifier to its target item:
+
+```http
+POST /api/codes/lookup/
+```
+```json
+{
+  "identifier": "R8k2M1p0"
+}
+```
+
+**Response:**
+```json
+{
+  "uuid": "e1f2a3b4-c5d6-7e8f-9a0b-1c2d3e4f5a6b",
+  "identifier": "R8k2M1p0",
+  "name": "Raspberry Pi 5 (8GB)",
+  "type": "article"
+}
+```
+
+#### PDF Label Sheet Generation
+Generate a printable PDF label sheet for selected items:
+
+```http
+POST /api/codes/pdf/
+```
+```json
+{
+  "uuids": ["e1f2a3b4-c5d6-7e8f-9a0b-1c2d3e4f5a6b"],
+  "code_type": "qr",
+  "size": "a4",
+  "layout": "vertical"
+}
+```
+*Returns `application/pdf` binary data.*
+
+---
+
+### 7. Dashboard Statistics
+
+Retrieve real-time summary statistics for an inventory:
+
+```http
+GET /api/dashboard/?inventory={inventory_uuid}
+```
+
+**Response:**
+```json
+{
+  "counts": {
+    "areas": 4,
+    "articles": 142,
+    "categories": 6
+  },
+  "category_counts": [
+    { "name": "Electronics", "count": 84 },
+    { "name": "Hardware", "count": 58 }
+  ],
+  "last_added": [
+    {
+      "uuid": "e1f2a3b4-c5d6-7e8f-9a0b-1c2d3e4f5a6b",
+      "name": "Raspberry Pi 5 (8GB)",
+      "type": "article",
+      "created_at": "2026-10-18T12:00:00Z"
+    }
+  ]
+}
+```
