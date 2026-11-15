@@ -16,6 +16,7 @@ Below is the complete reference table of all environment variables supported by 
 | :--- | :---: | :---: | :--- |
 | `APP_URL` | **Recommended** | `None` | Primary public URL of your OpenInvento instance. Supports `https://domain.com`, `http://localhost:8080`, or bare hosts like `example.com:8080`. Bare hosts default to `http://`. |
 | `APP_URLS` | No | `None` | Comma-separated list of additional URLs or hostnames where the application can be accessed (same format as `APP_URL`). |
+| `SCAN_BASE_URL` | No | `None` | Origin for the links in printed QR codes, for example a short domain that redirects to your instance. Falls back to `APP_URL`. Origin only: a path is an error at startup. See [Links in QR codes](#links-in-qr-codes-scan_base_url). Available after v1.5.0. |
 | `SECRET_KEY` | **Recommended** | Unsafe fallback | Secret key used for cryptographic signing, session verification, and CSRF tokens. Set a long, secure random value in production. |
 | `DATA_DIRECTORY` | No | `/data` | Path to the directory where the SQLite database, uploaded media files, and attachments are persisted. |
 | `INIT_ADMIN_USERNAME` | Required if admin auto-created | `None` | Username for the initial administrator user account. |
@@ -53,6 +54,39 @@ OpenInvento uses `APP_URL` and `APP_URLS` to automatically configure two critica
 - **Origin Only**: Do not include subpaths in `APP_URL`. Supply the site origin only.
 - **HTTPS only** (from v1.5.0): When `APP_URL` and every entry of `APP_URLS` start with `https://`, the session and CSRF cookies get the `Secure` flag, so browsers never send them over plain http, and OpenInvento trusts the `X-Forwarded-Proto` header of your reverse proxy to detect https requests. If one entry still uses `http://`, for example a LAN address, both stay off, because secure cookies would break logins on that address. Give http access its own host name: browsers do not separate cookies by scheme or port, so with the same host over `http://` and `https://` (for example `https://inventory.example.com` and `http://inventory.example.com:8080`) the session cookie of an https login is also sent over http. OpenInvento logs a warning at startup in that case.
 - **Only `APP_URLS`** (from v1.5.0): If `APP_URL` is empty, the first entry of `APP_URLS` is used as `APP_URL`, for example for the single sign-on redirect URI. Single sign-on started under another entry moves to that host first, so users end up logged in there.
+
+---
+
+## Links in QR codes (`SCAN_BASE_URL`)
+
+Printed QR codes contain a link to their entry, so any phone camera can open it (see [Barcodes & QR Labels](../openinvento/barcodes-and-labels#what-a-qr-code-contains)). By default the link starts with `APP_URL`. Labels outlive instances, though: if the instance later moves to another address, every printed label stops working.
+
+`SCAN_BASE_URL` puts another origin into the QR codes, for example a short domain of your own:
+
+```bash
+APP_URL=https://inventory.example.com
+SCAN_BASE_URL=https://short.example
+```
+
+A QR code then holds `https://short.example/i/…`, and only the server behind `short.example` needs to know where the instance is. It has to redirect every request to `APP_URL` **with the path unchanged**, for example with nginx:
+
+```nginx
+server {
+    listen 443 ssl;
+    server_name short.example;
+    ssl_certificate /path/to/short.example.crt;
+    ssl_certificate_key /path/to/short.example.key;
+    return 302 https://inventory.example.com$request_uri;
+}
+```
+
+The short domain needs its own TLS certificate, because the QR codes contain an `https://` link.
+
+If the instance moves, you only change this redirect instead of reprinting labels. A short domain also makes the QR codes smaller.
+
+- **Origin only:** like `APP_URL`, with or without `https://`, but a path, query or fragment is an error at startup, because it would end up on every label.
+- **Not a login address:** OpenInvento is never opened under `SCAN_BASE_URL`, so it is not added to `ALLOWED_HOSTS` or the CSRF origins. Users always end up on `APP_URL`.
+- **Optional:** without it, QR codes use `APP_URL` as before.
 
 ---
 

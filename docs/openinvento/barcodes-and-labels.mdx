@@ -10,7 +10,7 @@ Physical inventory is only as good as your ability to identify and locate items 
 
 ## Unique System Identifiers
 
-Every component in OpenInvento—including **Areas**, **Shelves**, **Boxes**, and **Articles**—is automatically assigned a unique alphanumeric **identifier** (e.g. `X7k9P2mQ1a`).
+Every component in OpenInvento—including **Areas**, **Shelves**, **Boxes**, and **Articles**—is automatically assigned a unique alphanumeric **identifier** (e.g. `7GQ2MX4`). New identifiers use uppercase letters and digits only, without the easily confused `I`, `L`, `O` and `U`; entries created with older versions may still have mixed-case identifiers.
 
 These identifiers are:
 - Compact and optimized for fast barcode rendering and camera scanning.
@@ -33,6 +33,9 @@ OpenInvento allows you to export ready-to-print PDF label sheets tailored for st
    - **Sheet Layout**:
      - `Vertical`: 4 columns &times; 2 rows (8 labels per page).
      - `Horizontal`: 2 columns &times; 4 rows (8 labels per page).
+   - **Error Correction** (QR codes only):
+     - `Medium` (recommended): still readable when part of the code is scratched or dirty.
+     - `Low`: a smaller code, but less tolerant of damage.
 4. Click **Generate PDF** to download the label sheet.
 
 ### Printed Label
@@ -40,7 +43,25 @@ OpenInvento allows you to export ready-to-print PDF label sheets tailored for st
 Each printed cell includes:
 1. **Item Title**: Bold item name (up to 32 characters).
 2. **Code**: Centered high-resolution vector QR code or Code128 barcode.
-3. **Reference Footer**: Object type and identifier (e.g., `article: X7k9P2mQ1a` or `box: K4b1L9vA0e`).
+3. **Reference Footer**: Object type and identifier (e.g., `article: 7GQ2MX4` or `box: K4B1L9V`).
+
+### What a QR Code Contains
+
+A QR code contains a link to its entry, so any phone camera app can open it, not only the scanner in OpenInvento:
+
+```text
+https://inventory.example.com/i/{inventory identifier}/{identifier}
+```
+
+- **Smaller codes:** if both identifiers only use uppercase letters and digits, the whole link is written in uppercase, like `HTTPS://INVENTORY.EXAMPLE.COM/I/K7M2Q/7GQ2MX4`. QR codes store uppercase text much more compactly, so the code gets smaller or more robust. Entries with older mixed-case identifiers get the same link in lowercase.
+- **Opening a link:** OpenInvento asks for a login first if needed, then opens the entry and switches to its inventory. A code that doesn't exist, or belongs to an inventory you're not a member of, shows "Code not found".
+- **Only an identifier:** without `APP_URL`, the QR code holds just the identifier, as Code128 barcodes always do. Identifiers `.` and `..` also stay without a link, because such a link can't reach the entry.
+- **Turning links off:** administrators can switch this off under **Settings** &rarr; **Admin settings (instance)** &rarr; **URLs in QR codes**. QR codes then hold only the identifier.
+- **Before printing:** while links are on, the label options show which address the QR codes point to.
+
+:::caution Moving your instance
+Printed links point to the address they were printed with. If your instance moves to another address, those labels stop opening their entries. To keep labels valid across moves, point QR codes at a short address of your own with [`SCAN_BASE_URL`](../setup-installation/configuration#links-in-qr-codes-scan_base_url), which redirects to your instance.
+:::
 
 ---
 
@@ -51,6 +72,8 @@ When you need to find an item or verify what is stored inside a box:
 1. Click the **Scan Code** icon in the navigation bar.
 2. Scan the code using your mobile device's camera or a connected barcode scanner.
 3. OpenInvento queries the `/api/codes/lookup/` endpoint and immediately opens the detailed view of the matched article, box, shelf, or area.
+
+The scanner reads both the links in QR codes and plain identifiers, in uppercase as well as lowercase links. You can also scan a QR code with your phone's camera app outside OpenInvento: it opens the entry in the browser.
 
 ---
 
