@@ -59,7 +59,8 @@ https://inventory.example.com/i/{inventory identifier}/{identifier}
 - **Turning links off:** administrators can switch this off under **Settings** &rarr; **Admin settings (instance)** &rarr; **URLs in QR codes**. QR codes then hold only the identifier.
 - **Before printing:** while links are on, the label options show which address the QR codes point to.
 
-:::caution Moving your instance
+:::caution
+Moving your instance
 Printed links point to the address they were printed with. If your instance moves to another address, those labels stop opening their entries. To keep labels valid across moves, point QR codes at a short address of your own with [`SCAN_BASE_URL`](../setup-installation/configuration#links-in-qr-codes-scan_base_url), which redirects to your instance.
 :::
 
