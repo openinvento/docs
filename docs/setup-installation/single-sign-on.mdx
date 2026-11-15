@@ -184,7 +184,8 @@ OIDC_BUTTON_LABEL=Authentik
 
 The issuer is `https://<host>/application/o/<application slug>/` **with** the trailing slash, exactly as the provider page shows it under **OpenID Configuration Issuer**.
 
-:::note Email addresses from Authentik
+:::note
+Email addresses from Authentik
 Authentik's default `email` scope mapping always sends `email_verified: false`, so OpenInvento does not copy the address and `OIDC_LINK_EXISTING_BY_EMAIL` never links an account. If the addresses in Authentik are trustworthy (set by administrators or verified by an enrollment flow, and users cannot change them freely), create a scope mapping under **Customization** &rarr; **Property Mappings** &rarr; **Create** &rarr; **Scope Mapping** with scope name `email` and this expression:
 
 ```python
