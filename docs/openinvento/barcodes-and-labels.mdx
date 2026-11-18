@@ -17,6 +17,25 @@ These identifiers are:
 - Permanent and uniquely indexed across your inventory.
 - Human-readable directly below the code on printed labels.
 
+### Writing older identifiers in uppercase
+
+New identifiers only use uppercase letters and digits. Identifiers created before that mix upper- and lowercase letters, like `yhKXKrpTfW`. A QR code can store uppercase letters and digits much more compactly, so with an older identifier the QR code on the label is larger than necessary.
+
+To convert older identifiers, run the `uppercase_identifiers` command. Without `--apply`, it only lists what it would change:
+
+```bash
+docker compose exec openinvento python manage.py uppercase_identifiers
+docker compose exec openinvento python manage.py uppercase_identifiers --apply
+```
+
+With a manual `docker run` installation, use `docker exec openinvento …` instead of `docker compose exec openinvento …`.
+
+- **Only plain letters and digits change.** `yhKXKrpTfW` becomes `YHKXKRPTFW`. Identifiers you picked yourself with other characters, like `box-1`, stay as they are.
+- **Identifiers that differ only in case stay too.** If an inventory has both `ab` and `AB`, neither changes, because a label with one of them could otherwise open the other entry. The command lists these, so you can rename them by hand. If you do, print the label of the renamed entry again right away: its old label would otherwise open the other entry.
+- **Printed labels keep working.** When a scanned code has no exact match, OpenInvento also accepts a match that differs only in case, as long as exactly one entry fits. Labels printed before the conversion still open their entries, but they keep the larger QR code until you print them again.
+
+This is a command and not an automatic update, because identifiers are printed on labels. You decide whether and when to convert them. A [backup](../setup-installation/updating-and-backups#backing-up-your-data) beforehand is a good idea.
+
 ---
 
 ## Generating Printable PDF Labels
