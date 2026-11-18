@@ -18,11 +18,11 @@ The Loan module allows you to manage the lending of items to users or department
 ### Prometheus metrics module
 The Prometheus metrics module serves inventory and instance numbers at `/api/metrics/` for Prometheus and other monitoring tools. Scrapers authenticate with an API key. See [Prometheus Metrics](./prometheus-metrics) for the metrics and scraper examples. Available from v1.5.0.
 
-### Lost and found module
-The Lost and found module shows a "Found this item?" page to someone who scans the QR code of a lost item without being signed in, instead of the login page.
+### Public contact page module (`lostfound`)
+The public contact page module shows a contact page instead of the login page to someone who scans an entry's QR code without being signed in, for example the finder of a lost backpack.
 
-Owners turn it on per entry in the **Lost & found** section of an article, box or area page with **Finders can contact me**. They choose whether the page shows the name and the photo, and can add a note, for example how to return the item or a reward. Nothing else about the entry or the inventory is public.
+Owners turn it on per entry with **Show contact page when scanned** in the **Public contact page** section of an article, box or area page, or in the edit dialog of a shelf. They choose whether the page shows the name and the photo, and can add a note, for example how to return the item, who to ask or a reward. Nothing else about the entry or the inventory is public.
 
-The finder can send a message and optionally a way to reach them. All members of the inventory get it as a notification in OpenInvento; no email address or other member data is shown to the finder. Messages are limited to 5 per hour per IP address.
+Visitors can send a message and optionally a way to reach them. All members of the inventory get it as a notification in OpenInvento; no email address or other member data is shown to the visitor. Messages are limited to 5 per hour per IP address.
 
 Signed-in users who scan the code still go to the entry. Codes of entries without the page, unknown codes and all codes while the module is disabled lead to the login page as before. The page needs QR codes that contain a link, see **URLs in QR codes** in the instance settings and [Barcodes & QR Labels](./barcodes-and-labels#what-a-qr-code-contains). Available after v1.5.0.
