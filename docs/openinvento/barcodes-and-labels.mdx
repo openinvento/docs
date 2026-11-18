@@ -70,19 +70,43 @@ Printed links point to the address they were printed with. If your instance move
 
 When you need to find an item or verify what is stored inside a box:
 
-1. Click the **Scan Code** icon in the navigation bar.
-2. Scan the code using your mobile device's camera or a connected barcode scanner.
-3. OpenInvento queries the `/api/codes/lookup/` endpoint and immediately opens the detailed view of the matched article, box, shelf, or area.
+1. Open **Code Management** in the sidebar.
+2. Click **Scan a code** to use the camera, or the **External Barcode Scanner** button next to it to use a barcode scanner.
+3. OpenInvento opens the article, box, shelf, or area that belongs to the code.
 
-The scanner reads both the links in QR codes and plain identifiers, in uppercase as well as lowercase links. You can also scan a QR code with your phone's camera app outside OpenInvento: it opens the entry in the browser.
+The scanner reads the links in QR codes, plain identifiers, and the [product barcodes](#product-barcodes) stored on articles:
+
+- **Identifiers first:** a code that is an entry's identifier always opens that entry, even if an article has the same number as a barcode.
+- **Then product barcodes:** otherwise OpenInvento looks for articles with that barcode, starting with the selected inventory, then in all other inventories you're a member of.
+- **Several matches:** the same product can be stored in several places, for example a spare pack in the cellar and an open one in the kitchen. Then a list shows every match with its inventory, and you pick the one you mean.
+
+You can also scan a QR code with your phone's camera app outside OpenInvento: it opens the entry in the browser.
+
+### External Barcode Scanners
+
+Most handheld USB and Bluetooth scanners work in keyboard mode: they type the code and press Enter, like a keyboard would. The **External Barcode Scanner** button opens a field for them. Scan into it, or type a code and press Enter. The same field is on the [barcode import](./smart-import-third-party#barcode-import) page.
 
 ---
 
-## Custom Barcode Fields
+## Product Barcodes
 
-In addition to system-generated identifiers, articles can store manufacturer barcodes, ISBNs, or serial numbers:
+Articles can store the barcodes printed on their packaging, so scanning the package finds the article. Add them in the **Barcodes** section of an article, when creating or editing it:
 
-- If you categorize an item under **Books**, it includes an `isbn` barcode field.
-- If you categorize an item under **Electronics**, it includes a `serial_number` barcode field.
-- If you categorize an item under **Medicine**, it includes a `pzn_barcode` field.
-- You can add custom barcode fields to any category in **Inventory Settings** &rarr; **Categories**.
+| Type | What it is | Check |
+| :--- | :--- | :--- |
+| `EAN / UPC` | The barcode on most retail products (EAN-8, UPC-A, EAN-13, GTIN-14) | check digit |
+| `ISBN` | Books, ISBN-10 or ISBN-13 | check digit |
+| `PZN` | German pharmacy number on medicine packs (PZN7 or PZN8) | check digit |
+| `Other` | Anything else, for example an internal part number | none |
+
+- **Detect type:** leave the type on *Detect type* and OpenInvento picks it from the number. A PZN looks like an EAN-8, so choose `PZN` yourself for medicine.
+- **Spelling:** spaces and hyphens are removed, and a leading `PZN` is dropped, so `978-3-16-148410-0` and `9783161484100` are the same ISBN.
+- **Check digits:** a number with a wrong check digit is rejected, usually because of a typo. If the code really is like that, save it as `Other`.
+- **Several barcodes:** an article can have several, for example when the packaging changed, or a medicine pack carries both a PZN and an EAN. Several articles can share a barcode too.
+
+Serial numbers stay a category field (`serial_number` in **Electronics**), because every device has its own. Scanning doesn't search category fields.
+
+:::note
+Upgrading from v1.5.0 or earlier
+The default fields `barcode` (**Food**), `isbn` (**Books**) and `pzn_barcode` (**Medicine**) are replaced by product barcodes. Their values are moved into the articles' barcodes when you upgrade, and the three fields are removed. A value that doesn't pass the check digit is kept as `Other`.
+:::

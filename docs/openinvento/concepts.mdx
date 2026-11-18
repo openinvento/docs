@@ -77,7 +77,7 @@ OpenInvento allows you to configure dynamic custom fields either **globally** or
 | `number` | Numeric stepper | Page count, Warranty months, Voltage |
 | `boolean` | Toggle checkbox | Read status, Prescription required, Insured |
 | `date` | Date picker | Expiry date, Purchase date |
-| `barcode` | Scannable code field | ISBN, EAN, Serial number, PZN |
+| `barcode` | Scannable code field | Serial number |
 | `select` | Dropdown menu with defined options | Stock level (`low`, `medium`, `high`), Condition |
 
 ---
@@ -86,11 +86,13 @@ OpenInvento allows you to configure dynamic custom fields either **globally** or
 
 When a new inventory is created, OpenInvento automatically provisions a set of sensible default categories and fields:
 
-- **Food**: `barcode` (Barcode), `expiration_date` (Date)
-- **Books**: `isbn` (Barcode), `author` (Text), `pages` (Number), `read_status` (Boolean)
+- **Food**: `expiration_date` (Date)
+- **Books**: `author` (Text), `pages` (Number), `read_status` (Boolean)
 - **Electronics**: `serial_number` (Barcode), `purchase_date` (Date), `warranty_months` (Number), `has_insurance` (Boolean)
 - **Clothing**: `brand` (Text), `size` (Text), `quantity` (Number)
-- **Medicine**: `pzn_barcode` (Barcode), `expiry` (Date), `prescription_required` (Boolean)
+- **Medicine**: `expiry` (Date), `prescription_required` (Boolean)
 - **Global Fields**: `minimum_quantity` (Number), `stock_level` (Select: low / medium / high)
 
 You can create, modify, or delete categories and custom fields at any time in **Inventory Settings** &rarr; **Categories**.
+
+Product barcodes such as EAN, ISBN or PZN aren't category fields: every article has its own list of them, which scanning searches. See [Product Barcodes](./barcodes-and-labels#product-barcodes).
