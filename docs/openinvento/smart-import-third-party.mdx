@@ -13,6 +13,18 @@ Open Inventory Settings > Third Party Integrations to configure the providers. Y
 ### Barcode lookup
 - OpenFoodFacts (No API key required)
 
+## Barcode import
+
+Open the **+** button at the bottom right and choose **Create article from barcode**. Scan product barcodes with the camera, or with a barcode scanner in keyboard mode in the field below it. You can also type a code and press Enter.
+
+For each code, the barcode lookup provider fills in the product name, and you can add it as an article. The scanned code is stored as the article's [product barcode](./barcodes-and-labels#product-barcodes), so scanning the package later finds the article.
+
+Options, saved in your browser:
+
+- **One category for all** (on): the category you pick applies to every article of this scan session. Off: pick a category for each scanned article.
+- **Add unknown products** (on): products the provider doesn't know, or knows without a name, can be added with a name you type in. Off: they only show an error.
+- **Show existing articles** (on): shows which articles of this inventory already have the scanned barcode, so you don't add the same product twice by accident.
+
 ### Vision AI detection
 - Google Gemini API (API key required)
 - Ollama local model (No API key required, set `OLLAMA_API_URL` as env variable!)

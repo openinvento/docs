@@ -117,6 +117,9 @@ POST /api/entries/
   "category": "8a7b6c5d-4e3f-2a1b-0c9d-8e7f6a5b4c3d",
   "field_values_input": [
     {"field": "9d8c7b6a-5e4f-3a2b-1c0d-9e8f7a6b5c4d", "value": "RP5-8G-2026-X89"}
+  ],
+  "barcodes_input": [
+    {"kind": "ean", "value": "5056561803326"}
   ]
 }
 ```
@@ -163,6 +166,16 @@ Article responses include `field_values` and `category_fields`. To set field val
 The `category_fields` response contains the field definitions applicable to the article: global fields (`category: null`) and, when the article has a category, fields assigned to that category. Supported `field_type` values are `text`, `number`, `boolean`, `date`, `barcode`, and `select`. `options` is a JSON list used for field options.
 
 When submitting `field_values_input` (a list of objects with `field`, `value` and optionally `notify_on_date`), each item must include a string `field` UUID. Field IDs must belong to the same inventory and may not be duplicated in the submitted list. `notify_on_date` must be a boolean; only date fields may set it to `true`. The serializer updates submitted values but does not delete existing values omitted from the list.
+
+#### Product Barcodes
+
+Entry responses include `barcodes`, a list of `{"kind": ..., "value": ...}`. To set them, send `barcodes_input` when creating or updating an entry. It replaces all barcodes of the entry, so send the full list; an empty list removes them all, and leaving it out keeps them.
+
+- `kind` is `ean`, `isbn`, `pzn` or `other`. An empty `kind` is detected from the value; a PZN is never detected, because it looks like an EAN-8.
+- Values are stored without spaces and hyphens, a leading `PZN` is dropped, and `ean`, `isbn` and `pzn` values must pass their check digit. `other` takes any value of 1 to 80 characters.
+- A value may only appear once per entry, but several entries can share it.
+
+The web interface shows barcodes on articles; the API accepts them on any entry type. See [Product Barcodes](./barcodes-and-labels#product-barcodes).
 
 #### Article Images and Attachments
 
@@ -306,26 +319,43 @@ GET /api/search/?inventory={inventory_uuid}&q=Raspberry
 ### 6. Barcode & QR Code Operations
 
 #### Code Lookup
-Resolve any scanned identifier to its target item:
+Find the entries for a scanned code, an entry identifier or a product barcode:
 
 ```http
 POST /api/codes/lookup/
 ```
 ```json
 {
-  "identifier": "R8k2M1p0"
+  "identifier": "5056561803326",
+  "inventory": "4f9d2a3e-7a1b-4b2e-8c3d-1e2f3a4b5c6d"
 }
 ```
+
+- `identifier` (required): the scanned code.
+- `inventory` (optional): an inventory UUID to search first, then all other inventories you can access.
+- `inventory_identifier` (optional): for the link in a QR code (`/i/{inventory identifier}/{identifier}`), which names its inventory. Only that inventory is searched, and only for identifiers.
 
 **Response:**
 ```json
 {
-  "uuid": "e1f2a3b4-c5d6-7e8f-9a0b-1c2d3e4f5a6b",
-  "identifier": "R8k2M1p0",
-  "name": "Raspberry Pi 5 (8GB)",
-  "type": "article"
+  "matches": [
+    {
+      "uuid": "e1f2a3b4-c5d6-7e8f-9a0b-1c2d3e4f5a6b",
+      "identifier": "7GQ2MX4",
+      "name": "Raspberry Pi 5 (8GB)",
+      "type": "article",
+      "inventory": {"uuid": "4f9d2a3e-7a1b-4b2e-8c3d-1e2f3a4b5c6d", "name": "Workshop"},
+      "matched_by": "barcode"
+    }
+  ]
 }
 ```
+
+`matched_by` is `identifier` or `barcode`. An identifier match comes back alone. A barcode can be on several entries, so all of them come back (up to 50), those of the given inventory first. No match answers `404`.
+
+:::note
+In v1.5.0 and earlier, the response was a single entry object instead of a `matches` list, and product barcodes weren't searched.
+:::
 
 #### PDF Label Sheet Generation
 Generate a printable PDF label sheet for selected items:
